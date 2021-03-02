@@ -1,6 +1,6 @@
 # Don't forget the constant-time in CSURF!
 
-Comparison between large constant-time implementations of CSIDH and CSURF using radical isogenies, in terms of field operations.
+Comparison between large constant-time implementations of CSIDH and CSURF using/without radical isogenies, in terms of field operations.
 
 
 ## Compilation
@@ -56,36 +56,36 @@ We summarize some examples of runs as follows
 
 ```bash
 # CSIDH + velusqrt + unscaled multievaluation approach + tunned velusqrt parameters
-python3 main.py -p p512  -m unscaled -s wd2 -v -a csidh
-python3 main.py -p p512  -m unscaled -s wd1 -v -a csidh
-python3 main.py -p p512  -m unscaled -s df -v -a csidh
+python3 main.py -p p512  -m unscaled -s wd2 -v -a csidh -e 5
+python3 main.py -p p512  -m unscaled -s wd1 -v -a csidh -e 10
+python3 main.py -p p512  -m unscaled -s df -v -a csidh -e 10
 # CSIDH + velusqrt + scaled multievaluation approach + tunned velusqrt parameters
-python3 main.py -p p512  -m scaled -s wd2 -v -a csidh
-python3 main.py -p p512  -m scaled -s wd1 -v -a csidh
-python3 main.py -p p512  -m scaled -s df -v -a csidh
+python3 main.py -p p512  -m scaled -s wd2 -v -a csidh -e 5
+python3 main.py -p p512  -m scaled -s wd1 -v -a csidh -e 10
+python3 main.py -p p512  -m scaled -s df -v -a csidh -e 10
 
 # CSURF + velusqrt + unscaled multievaluation approach + tunned velusqrt parameters
-python3 main.py -p p512  -m unscaled -s wd2 -v -a csurf -r
-python3 main.py -p p512  -m unscaled -s wd1 -v -a csurf -r
-python3 main.py -p p512  -m unscaled -s df -v -a csurf -r
+python3 main.py -p p512  -m unscaled -s wd2 -v -a csurf -r -e 5
+python3 main.py -p p512  -m unscaled -s wd1 -v -a csurf -r -e 10
+python3 main.py -p p512  -m unscaled -s df -v -a csurf -r -e 10
 # CSURF + velusqrt + scaled multievaluation approach + tunned velusqrt parameters
-python3 main.py -p p512  -m scaled -s wd2 -v -a csurf -r
-python3 main.py -p p512  -m scaled -s wd1 -v -a csurf -r
-python3 main.py -p p512  -m scaled -s df -v -a csurf -r
+python3 main.py -p p512  -m scaled -s wd2 -v -a csurf -r -e 5
+python3 main.py -p p512  -m scaled -s wd1 -v -a csurf -r -e 10
+python3 main.py -p p512  -m scaled -s df -v -a csurf -r -e 10
 
 # CRADS + velusqrt + unscaled multievaluation approach + tunned velusqrt parameters
-python3 main.py -p p512  -m unscaled -s wd2 -v -a csurf
-python3 main.py -p p512  -m unscaled -s wd1 -v -a csurf
-python3 main.py -p p512  -m unscaled -s df -v -a csurf
+python3 main.py -p p512  -m unscaled -s wd2 -v -a csurf -e 5
+python3 main.py -p p512  -m unscaled -s wd1 -v -a csurf -e 10
+python3 main.py -p p512  -m unscaled -s df -v -a csurf -e 10
 # CRADS + velusqrt + scaled multievaluation approach + tunned velusqrt parameters
-python3 main.py -p p512  -m scaled -s wd2 -v -a csurf
-python3 main.py -p p512  -m scaled -s wd1 -v -a csurf
-python3 main.py -p p512  -m scaled -s df -v -a csurf
+python3 main.py -p p512  -m scaled -s wd2 -v -a csurf -e 5
+python3 main.py -p p512  -m scaled -s wd1 -v -a csurf -e 10
+python3 main.py -p p512  -m scaled -s df -v -a csurf -e 10
 
 # Benchmarking with 7 experiments
-python3 bench.py -p p512  -m unscaled -s wd2 -v -a csidh -b 7
-python3 bench.py -p p512  -m unscaled -s wd2 -v -a csurf -b 7
-python3 bench.py -p p512  -m unscaled -s wd2 -v -a csurf -r -b 7
+python3 bench.py -p p512  -m unscaled -s wd2 -v -a csidh -b 7 -e 5
+python3 bench.py -p p512  -m unscaled -s wd2 -v -a csurf -b 7 -e 5
+python3 bench.py -p p512  -m unscaled -s wd2 -v -a csurf -r -b 7 -e 5
 ```
 
 ## Configuration
