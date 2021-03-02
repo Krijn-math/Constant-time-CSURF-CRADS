@@ -1,0 +1,17 @@
+// Reading Shortest Differential Addition Chains (SDACs) from the file ./sdacs/p512
+
+Exponent of two:	3
+Extra cofactor 3:	True
+Extra cofactor 5:	False
+Extra cofactor 7:	False
+
+// Reading Strategies from the file ./strategies/csidh-p512-wd2-hvelu--tunned-different_bounds-e5
+// All the experiments are assuming S = 1.000000 x M and a = 0.000000 x M. The measures are given in millions of field operations.
+// The exponents bounds and private keys go from the smallest to the largest small odd primes ell_i's
+
+Exponents bounds := ( 7 9 9 10 10 10 10 10 11 11 11 11 11 11 11 11 11 11 11 11 11 9 11 9 8 8 8 7 7 7 7 6 6 5 5 5 5 4 4 4 4 4 4 4 4 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 2 2 2 2 2 2 2 2 2 2 1 );
+
+
+// Average number of field operations (GAE):		0.626M + 0.165S + 0.893a := 0.791M
+// Average number of field operations (validate):	0.021M + 0.010S + 0.030a := 0.031M
+

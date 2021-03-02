@@ -1,0 +1,21 @@
+// Reading Shortest Differential Addition Chains (SDACs) from the file ./sdacs/p1024
+// Measuring the cost of a degree-ell isogeny construction and evaluation for each small odd prime number ell in the factorization of p + 1
+
+Exponent of two:	514
+Extra cofactor 3:	False
+Extra cofactor 5:	False
+Extra cofactor 7:	False
+
+// Constructing Strategies
+// Storing Strategies into the file ./strategies/csurf-p1024-wd1-hvelu--tunned-different_bounds-e10
+// All the experiments are assuming S = 1.000000 x M and a = 0.000000 x M. The measures are given in millions of field operations.
+// The exponents bounds and private keys go from the smallest to the largest small odd primes ell_i's
+
+Exponents bounds := ( 1 1 1 1 22 22 23 23 23 23 23 23 20 21 23 24 24 24 24 24 24 24 22 24 21 17 17 17 16 15 13 14 13 12 12 11 11 10 10 10 9 9 9 9 8 8 8 7 7 7 7 7 7 7 7 7 6 6 6 6 6 6 6 6 6 5 5 6 4 4 4 4 4 4 2 );
+
+
+// Average number of field operations (RAD):		0.048M + 0.060S + 0.050a := 0.108M
+// Average number of field operations (GAE):		0.930M + 0.245S + 1.328a := 1.175M
+// Average number of field operations (total):		0.978M + 0.305S + 1.379a := 1.283M
+// Average number of field operations (validate):	0.023M + 0.011S + 0.032a := 0.034M
+

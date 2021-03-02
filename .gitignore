@@ -1,0 +1,9 @@
+*.pyc
+manuscript/build/*
+manuscript/figures/*.pdf
+manuscript/*-manuscript.aux
+manuscript/*-manuscript.bbl
+manuscript/*-manuscript.blg
+manuscript/*-manuscript.log
+manuscript/*-manuscript.out
+manuscript/*-manuscript.pdf
