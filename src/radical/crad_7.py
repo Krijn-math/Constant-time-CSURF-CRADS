@@ -153,7 +153,7 @@ def pro_to_aff_seven(X,Z):
     
     return A
 
-def act_with_seven_on_Montgomery(A, exp):
+def act_with_seven_on_Montgomery(A, exp, Tp_proj = None):
     '''
     Adapted from the Radical isogenies code.
     Applies exp number of 7 isogenies to the Montgomery curve E_A on the floor.
@@ -162,14 +162,19 @@ def act_with_seven_on_Montgomery(A, exp):
     '''
 
     A = (A * sign(exp)) % p         #
-
-    Tp_proj, _ = sampling_ell_order_point(A, 2)
-    while isinfinity(Tp_proj):
+    if Tp_proj == None:
         Tp_proj, _ = sampling_ell_order_point(A, 2)
+        while isinfinity(Tp_proj):
+            Tp_proj, _ = sampling_ell_order_point(A, 2)
+
+        sign_exp = 1
+    else:
+        sign_exp = sign(exp)
 
     # Affine x-coordinate Tp
     xTp = crad_inv(Tp_proj[1])
     xTp = fp_mul(xTp, Tp_proj[0])
+    xTp = (xTp * sign_exp) % p         # <--- isomorphism from A to -A with zera-trace points on A
         
     M, N = Montgomery_to_Tate(A, xTp)
     #invA = fp_sub(M, 1)

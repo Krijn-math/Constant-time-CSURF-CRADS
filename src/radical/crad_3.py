@@ -75,7 +75,7 @@ def three_iso(A, B):
 
     return newA, newB
 
-def act_with_three_on_Montgomery(A, exp):
+def act_with_three_on_Montgomery(A, exp, Tp_proj = None):
     '''
     Adapted from the Radical isogenies code.
     Applies exp number of 3 isogenies to the Montgomery curve E_A on the floor.
@@ -86,20 +86,25 @@ def act_with_three_on_Montgomery(A, exp):
     '''
     
     A = (A * sign(exp)) % p         #
-    A_proj = [fp_add(A, 2), 4]
-
-    Tp_proj, _ = sampling_ell_order_point(A, 0)
-    Tp_proj_times_3 = xMUL(Tp_proj, A_proj, 0)
-    while isinfinity(Tp_proj) and isinfinity(Tp_proj_times_3):
+    if Tp_proj == None:
+        A_proj = [fp_add(A, 2), 4]
         Tp_proj, _ = sampling_ell_order_point(A, 0)
         Tp_proj_times_3 = xMUL(Tp_proj, A_proj, 0)
+        while isinfinity(Tp_proj) and isinfinity(Tp_proj_times_3):
+            Tp_proj, _ = sampling_ell_order_point(A, 0)
+            Tp_proj_times_3 = xMUL(Tp_proj, A_proj, 0)
 
-    if not isinfinity(Tp_proj_times_3):
-        Tp_proj = list(Tp_proj_times_3)
+        if not isinfinity(Tp_proj_times_3):
+            Tp_proj = list(Tp_proj_times_3)
+
+        sign_exp = 1
+    else:
+        sign_exp = sign(exp)
 
     # Affine x-coordinate Tp
     xTp = crad_inv(Tp_proj[1])
     xTp = fp_mul(xTp, Tp_proj[0])
+    xTp = (xTp * sign_exp) % p         # <--- isomorphism from A to -A with zera-trace points on A
     
     M, N = Montgomery_to_Tate_three(A, xTp)         #<--- confusing line of code in magma
     M = (-M) % p
@@ -275,7 +280,7 @@ def nine_iso(A):
 
     return output
 
-def act_with_nine_on_Montgomery(A, exp):
+def act_with_nine_on_Montgomery(A, exp, Tp_proj = None):
     '''
     Adapted from the Radical isogenies code.
     Applies exp number of 9 isogenies to the Montgomery curve E_A on the floor.
@@ -285,14 +290,19 @@ def act_with_nine_on_Montgomery(A, exp):
     '''
     
     A = (A * sign(exp)) % p         #
-    
-    Tp_proj, _ = sampling_ell_order_point(A, 0)
-    while isinfinity(xMUL(Tp_proj, [fp_add(A, 2), 4], 0)):
+    if Tp_proj == None:
         Tp_proj, _ = sampling_ell_order_point(A, 0)
+        while isinfinity(xMUL(Tp_proj, [fp_add(A, 2), 4], 0)):
+            Tp_proj, _ = sampling_ell_order_point(A, 0)
+
+        sign_exp = 1
+    else:
+        sign_exp = sign(exp)
 
     # Affine x-coordinate Tp
     xTp = crad_inv(Tp_proj[1])
     xTp = fp_mul(xTp, Tp_proj[0])
+    xTp = (xTp * sign_exp) % p         # <--- isomorphism from A to -A with zera-trace points on A
     
     M, N = Montgomery_to_Tate(A, xTp)
 

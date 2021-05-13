@@ -1,6 +1,10 @@
 from framework import *
 from src.hvelu import *
+from src.radical.crad_3 import act_with_nine_on_Montgomery, act_with_three_on_Montgomery
+from src.radical.crad_5 import act_with_five_on_Montgomery
+from src.radical.crad_7 import act_with_seven_on_Montgomery
 
+from src.fp import sign
 # random_key() implements an uniform random sample from [-m_1,m_1] x ... x -[m_n, m_n]
 random_key = lambda m: [ random.randint(-m_i, m_i) for m_i in m]
 
@@ -87,7 +91,7 @@ def dynamic_programming_algorithm(L, n):
     
     NOTE: T_+ belongs to E[pi - 1] and T_- belongs to E[pi + 1]. In particular, P = [T_-, T_+]
 '''
-def evaluate_strategy(E, P, L, strategy, n, m, e):
+def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
 
     v = list(m)
     u = list(e)
@@ -120,6 +124,7 @@ def evaluate_strategy(E, P, L, strategy, n, m, e):
         # Vertical edges without ramifications
         s_i = sign(e[pos])                            # Sign of e[pos]
         c_i = (s_i + 1) // 2                          # Constant-swap of T_+ and T_-
+        #print(f'==> sign:\t{sign(e[pos])};\t\texp:\t{e[pos]}')
         if prev < (n - 1 - i):
 
             moves.append(strategy[k])                           # Number of vertical edges (without ramifications) to be performed            
@@ -305,33 +310,52 @@ def evaluate_strategy(E, P, L, strategy, n, m, e):
     if isinfinity(ramifications[0][0]) == False:
 
         if m[pos] > 0:
-        
-            b_i = isequal[e[pos] == 0]
 
-            if setting.verbose:
-                set_parameters_velu(sJ_list[pos], sI_list[pos], pos)
+            if crads_prime == []:
+        
+                b_i = isequal[e[pos] == 0]
+
+                if setting.verbose:
+                    set_parameters_velu(sJ_list[pos], sI_list[pos], pos)
+
+                else:
+                    # -------------------------------------------------------------
+                    # Parameters sJ and sI correspond with the parameters b and b' from example 4.12 of https://eprint.iacr.org/2020/341
+                    # These paramters are required in KPs, xISOG, and xEVAL
+                    if global_L[pos] == 3:
+                        b = 0
+                        c = 0
+                    else:
+                        b = int(floor( sqrt(global_L[pos] - 1) / 2.0) )
+                        c = int(floor( (global_L[pos] - 1.0) / (4.0*b) ))
+
+                    set_parameters_velu(b, c, pos)
+
+                KPs(ramifications[0][0], E_i, pos)
+
+                C_i = xISOG(E_i, pos)
+                C_i[0], E_i[0] = fp_cswap(C_i[0], E_i[0], b_i ^ 1)
+                C_i[1], E_i[1] = fp_cswap(C_i[1], E_i[1], b_i ^ 1)
+
+                v[pos] -= 1
+                u[pos] -= (s_i * (b_i ^ 1))
 
             else:
-                # -------------------------------------------------------------
-                # Parameters sJ and sI correspond with the parameters b and b' from example 4.12 of https://eprint.iacr.org/2020/341
-                # These paramters are required in KPs, xISOG, and xEVAL
-                if global_L[pos] == 3:
-                    b = 0
-                    c = 0
+                # Radical isogeny part
+                A_i = coeff(E_i)
+
+                if crads_prime[0] == 3:
+                    A_i = act_with_three_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0][0])
+                elif crads_prime[0] == 5:
+                    A_i = act_with_five_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0][0])
+                elif crads_prime[0] == 7:
+                    A_i = act_with_seven_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0][0])
                 else:
-                    b = int(floor( sqrt(global_L[pos] - 1) / 2.0) )
-                    c = int(floor( (global_L[pos] - 1.0) / (4.0*b) ))
-
-                set_parameters_velu(b, c, pos)
-
-            KPs(ramifications[0][0], E_i, pos)
-
-            C_i = xISOG(E_i, pos)
-            C_i[0], E_i[0] = fp_cswap(C_i[0], E_i[0], b_i ^ 1)
-            C_i[1], E_i[1] = fp_cswap(C_i[1], E_i[1], b_i ^ 1)
-
-            v[pos] -= 1
-            u[pos] -= (s_i * (b_i ^ 1))
+                    print("not implemented")
+                    
+                v[pos] = 0
+                u[pos] = 0
+                E_i = [ fp_add(A_i, 2), 4 ]
         
     return E_i, v, u
 
@@ -392,15 +416,17 @@ def rounds(e, n):
           rounds().
           THIS IS THE IMPLEMENTATION OF OUR PROPOSED STRATEGY METHOD.
 '''
-def GAE(A, e, L, R, St, r, m):
+def GAE(A, e, L, R, St, r, m, crads = {'S':[], 'L':[]}):
 
     E_k = list(A)
     n = len(L)
-
+    if m[global_L.index(3)] == 0 and m[global_L.index(5)] == 0 and m[global_L.index(7)] == 0:
+        crads['L'] = []
+        
     for j in range(0, n, 1):
 
         for k in range(0, r[j], 1):
-
+            
             T_p, T_m = elligator(E_k)
 
             for ii in range(0, exponent_of_two, 1):
@@ -408,10 +434,28 @@ def GAE(A, e, L, R, St, r, m):
                 T_m = xDBL(T_m, E_k)
 
             for l in R[j]:
-                T_p = xMUL(T_p, E_k, global_L.index(l))
-                T_m = xMUL(T_m, E_k, global_L.index(l))
+                if [l] != crads['L'][-1:]:
+                    T_p = xMUL(T_p, E_k, global_L.index(l))
+                    T_m = xMUL(T_m, E_k, global_L.index(l))
 
-            E_k, m, e = evaluate_strategy(E_k, list([list(T_m), list(T_p)]), L[j], St[j], len(L[j]), m, e)
+            if setting.algorithm == 'csurf' and not setting.raw:
+                Strategy = { True:crads['S'][j], False:St[j] }[crads['L'][-1:] != []]
+            else:
+                Strategy = St[j]
+
+            E_k, m, e = evaluate_strategy(
+                E_k,
+                list([list(T_m), list(T_p)]),
+                crads['L'][-1:] + L[j],
+                Strategy,
+                len(crads['L'][-1:]) + len(L[j]),
+                m,
+                e,
+                crads_prime = crads['L'][-1:]
+            )
+            if crads['L'] != []:
+                if m[global_L.index(crads['L'][-1])] == 0:
+                    crads['L'] = crads['L'][:-1]
 
     # Multiplicative strategy on the set of unreached small odd prime numbers
     unreached_sop = [ global_L[i] for i in range(len(global_L)) if m[i] > 0 ]
@@ -426,11 +470,23 @@ def GAE(A, e, L, R, St, r, m):
             T_m = xDBL(T_m, E_k)
 
         for l in remainder_sop:
+            if [l] != crads['L'][-1:]:
                 T_p = xMUL(T_p, E_k, global_L.index(l))
                 T_m = xMUL(T_m, E_k, global_L.index(l))
 
-        current_n = len(unreached_sop)
-        E_k, m, e = evaluate_strategy(E_k, list([list(T_m), list(T_p)]), unreached_sop, list(range(current_n - 1, 0, -1)), current_n, m, e)
+        current_n = len(unreached_sop) + len(crads['L'][-1:])
+        E_k, m, e = evaluate_strategy(
+            E_k,
+            list([list(T_m), list(T_p)]),
+            crads['L'][-1:] + unreached_sop,
+            list(range(current_n - 1, 0, -1)),
+            current_n,
+            m,
+            e
+        )
+        if crads['L'] != []:
+            if m[global_L.index(crads['L'][-1])] == 0:
+                crads['L'] = crads['L'][:-1]
 
         # If the maximum of degree-(l_k) has been reached then the current batch (and its complement) must be updated
         tmp_unreached = [ unreached_sop[k] for k in range(current_n) if m[global_L.index(unreached_sop[k])] > 0 ]

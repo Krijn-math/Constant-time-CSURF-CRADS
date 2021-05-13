@@ -62,23 +62,27 @@ def pro_to_aff_five(X, Z):
     return A
 
 
-def act_with_five_on_Montgomery(A, exp):
+def act_with_five_on_Montgomery(A, exp, Tp_proj = None):
     '''
     Adapted from the Radical isogenies code.
     Applies exp number of 5 isogenies to the Montgomery curve E_A on the floor.
     The sign of exp indicates the direction of the isogenies.
     We use the projective version of the 5-isogeny to save inversions.
     '''
-    
     A = (A * sign(exp)) % p         #
-    
-    Tp_proj, _ = sampling_ell_order_point(A, 1)
-    while isinfinity(Tp_proj):
+    if Tp_proj == None:
         Tp_proj, _ = sampling_ell_order_point(A, 1)
+        while isinfinity(Tp_proj):
+            Tp_proj, _ = sampling_ell_order_point(A, 1)
+        
+        sign_exp = 1
+    else:
+        sign_exp = sign(exp)
 
     # Affine x-coordinate Tp
     xTp = crad_inv(Tp_proj[1])
     xTp = fp_mul(xTp, Tp_proj[0])
+    xTp = (xTp * sign_exp) % p         # <--- isomorphism from A to -A with zera-trace points on A
     
     _, A = Montgomery_to_Tate(A, xTp)
     A = -A % p                      #needed for input five_iso

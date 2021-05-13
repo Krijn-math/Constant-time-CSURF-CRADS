@@ -12,9 +12,9 @@ assert(exponent_of_two >= 3)
 
 from src.radical.crad_general import Montgomery_min_to_Montgomery, Montgomery_to_Montgomery_min, sampling_ell_order_point
 from src.radical.crad_4 import act_with_two_on_Montgomery, act_with_four_on_Montgomery, e_2
-from src.radical.crad_3 import act_with_nine_on_Montgomery, act_with_three_on_Montgomery, e_3
-from src.radical.crad_5 import act_with_five_on_Montgomery, e_5
-from src.radical.crad_7 import act_with_seven_on_Montgomery, e_7
+from src.radical.crad_3 import e_3
+from src.radical.crad_5 import e_5
+from src.radical.crad_7 import e_7
 
 ''' -------------------------------------------------------------------------------------
     Number of degree-(l_i) isogeny constructions to be performed: m_i
@@ -74,6 +74,14 @@ except IOError:
 
 print("// All the experiments are assuming S = %1.6f x M and a = %1.6f x M. The measures are given in millions of field operations." % (SQR, ADD))
 
+data_crads = {'S':[]}
+if setting.algorithm == 'csurf' and not setting.raw:
+    m = [e_3] + [e_5] + [e_7] + m[3:]
+    for i in range(len(S_out)):
+        # It doesn't matter the last small ell_i, it only add log2(n_i) scalar point multiplications
+        TMP, _ = dynamic_programming_algorithm(L_out[i] + [3], len(L_out[i]) + 1)
+        data_crads['S'].append(TMP)
+
 def validate(pub : int):
     return issupersingular([ fp_add(pub, 2), 4])
 
@@ -86,12 +94,12 @@ def keygen():
     # Recall, the affine Montgomery curve coefficient A = 0 has a projective representation as (A + 2 : 4) = (2 : 4)
     if not setting.raw:
         # Using degree-3
-        priv = [ random.randint(0, e_i) for e_i in [e_2, e_3, e_5, e_7] ] + random_key(m)[3:]
+        priv = [ random.randint(-e_i, e_i) for e_i in [e_2, e_3, e_5, e_7] ] + random_key(m)[3:]
         # Using degree-9 and degree-4
         #priv = single_exponent_sampling(e_2) + single_exponent_sampling(e_3) + [random.randint(0, e_5)] + [random.randint(0, e_7)] + random_key(m)[3:]
     else:
         # Using degree-2
-        priv = [random.randint(0, e_2)] + random_key(m)
+        priv = [random.randint(-e_2, e_2)] + random_key(m)
         # Using degree-4
         #priv = single_exponent_sampling(e_2) + random_key(m)
 
@@ -99,10 +107,10 @@ def keygen():
     if not setting.raw:
         if (len(temporal_m) == 1) or ((len(temporal_m) == 2) and (0 in temporal_m)):
             # This branch is focused when m degree-ell isogeny constructions are required for each ell playing on the GAE
-            pub = GAE([2, 4], [0,0,0] + priv[4:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m)
+            pub = GAE([2, 4], priv[1:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m, crads = {**data_crads, 'L':[7, 5, 3]})
         else:
             # This branch is centered when m_i degree-(ell_i) isogeny constructions are required per each ell playing on the GAE
-            pub = GAE([2, 4], [0,0,0] + priv[4:], L_out, R_out, S_out, r_out, m)
+            pub = GAE([2, 4], priv[1:], L_out, R_out, S_out, r_out, m, crads = {**data_crads, 'L':[7, 5, 3]})
     else:
         if (len(temporal_m) == 1) or ((len(temporal_m) == 2) and (0 in temporal_m)):
             # This branch is focused when m degree-ell isogeny constructions are required for each ell playing on the GAE
@@ -120,22 +128,8 @@ def keygen():
     
     # Degree-4 radical isogeny chain on the floor --> surface --> floor
     pub = act_with_four_on_Montgomery(pub, priv[0])
-    
-    if not setting.raw:
-        # Degree-3 radical isogeny chain on the floor
-        pub = act_with_three_on_Montgomery(pub, priv[1])
-
-        # Degree-9 radical isogeny chain on the floor
-        #pub = act_with_nine_on_Montgomery(pub, priv[1] // 2)
-        
-        # Degree-5 radical isogeny chain on the floor
-        pub = act_with_five_on_Montgomery(pub, priv[2])
-
-        # Degree-7 radical isogeny chain on the floor
-        pub = act_with_seven_on_Montgomery(pub, priv[3])
 
     cost_rad = get_ops()
-    
     cost = [x + y for x, y in zip(cost_velu, cost_rad)]
     
     return priv, pub, cost_velu, cost_rad, cost
@@ -154,19 +148,17 @@ def derive(priv, pub : int):
     if not setting.raw:
         if (len(temporal_m) == 1) or ((len(temporal_m) == 2) and (0 in temporal_m)):
             # This branch is focused when m degree-ell isogeny constructions are required for each ell playing on the GAE
-            ss = GAE(curve, [0,0,0] + priv[4:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m)
+            ss = GAE(curve, priv[1:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m, crads = {**data_crads, 'L':[7, 5, 3]})
         else:
             # This branch is centered when m_i degree-(ell_i) isogeny constructions are required per each ell playing on the GAE
-            ss = GAE(curve, [0,0,0] + priv[4:], L_out, R_out, S_out, r_out, m)
+            ss = GAE(curve, priv[1:], L_out, R_out, S_out, r_out, m, crads = {**data_crads, 'L':[7, 5, 3]})
     else:
         if (len(temporal_m) == 1) or ((len(temporal_m) == 2) and (0 in temporal_m)):
             # This branch is focused when m degree-ell isogeny constructions are required for each ell playing on the GAE
             ss = GAE(curve, priv[1:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m)
         else:
             # This branch is centered when m_i degree-(ell_i) isogeny constructions are required per each ell playing on the GAE
-            ss = GAE(curve, priv[1:], L_out, R_out, S_out, r_out, m)
-        
-
+            ss = GAE(curve, priv[1:], L_out, R_out, S_out, r_out, m)        
 
     ss = coeff(ss)
     cost_velu = get_ops()
@@ -178,21 +170,7 @@ def derive(priv, pub : int):
     # Degree-4 radical isogeny chain on the floor --> surface --> floor
     ss = act_with_four_on_Montgomery(ss, priv[0])
 
-    if not setting.raw:
-        # Degree-3 radical isogeny chain on the floor
-        ss = act_with_three_on_Montgomery(ss, priv[1])
-            
-        # Degree-9 radical isogeny chain on the floor 
-        #ss = act_with_nine_on_Montgomery(ss, priv[1] // 2)
-
-        # Degree-5 radical isogeny chain on the floor
-        ss = act_with_five_on_Montgomery(ss, priv[2])
-        
-        # Degree-7 radical isogeny chain on the floor
-        ss = act_with_seven_on_Montgomery(ss, priv[3])
-
-    cost_rad = get_ops()
-    
+    cost_rad = get_ops()    
     cost = [x + y for x, y in zip(cost_velu, cost_rad)]
     
     return ss, cost_velu, cost_rad, cost
