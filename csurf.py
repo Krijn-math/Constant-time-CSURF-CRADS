@@ -85,23 +85,12 @@ if setting.algorithm == 'csurf' and not setting.raw:
 def validate(pub : int):
     return issupersingular([ fp_add(pub, 2), 4])
 
-def single_exponent_sampling(e : int): return [2 * ( random.randint(0, e) - (e // 2) ) - (e % 2)]
-
 # =================================
 # Public and Private key generation
 def keygen():
 
     # Recall, the affine Montgomery curve coefficient A = 0 has a projective representation as (A + 2 : 4) = (2 : 4)
-    if not setting.raw:
-        # Using degree-3
-        priv = [ random.randint(-e_i, e_i) for e_i in [e_2, e_3, e_5, e_7] ] + random_key(m)[3:]
-        # Using degree-9 and degree-4
-        #priv = single_exponent_sampling(e_2) + single_exponent_sampling(e_3) + [random.randint(0, e_5)] + [random.randint(0, e_7)] + random_key(m)[3:]
-    else:
-        # Using degree-2
-        priv = [random.randint(-e_2, e_2)] + random_key(m)
-        # Using degree-4
-        #priv = single_exponent_sampling(e_2) + random_key(m)
+    priv = [random.randint(-e_2, e_2)] + random_key(m)
 
     set_zero_ops()
     if not setting.raw:
@@ -141,7 +130,7 @@ def derive(priv, pub : int):
     # Ensuring the input public curve is supersingular
     assert(validate(pub))
 
-    # Recall, the affine Montgomery curve coefficient A has a projective representation as (A + 2 : 4) = (2 : 4)
+    # Recall, the affine Montgomery curve coefficient A has a projective representation as (A + 2 : 4)
     curve = [ fp_add(pub, 2), 4]
 
     set_zero_ops()

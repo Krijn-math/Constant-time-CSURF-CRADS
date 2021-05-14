@@ -343,6 +343,7 @@ def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
             else:
                 # Radical isogeny part
                 A_i = coeff(E_i)
+                #print(f'Affine coeff:\t{hex(A_i)};\t\texp:\t{e[pos]};\t\tell:\t{crads_prime[0]}')
 
                 if crads_prime[0] == 3:
                     A_i = act_with_three_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0][0])
@@ -420,9 +421,7 @@ def GAE(A, e, L, R, St, r, m, crads = {'S':[], 'L':[]}):
 
     E_k = list(A)
     n = len(L)
-    if m[global_L.index(3)] == 0 and m[global_L.index(5)] == 0 and m[global_L.index(7)] == 0:
-        crads['L'] = []
-        
+            
     for j in range(0, n, 1):
 
         for k in range(0, r[j], 1):
@@ -458,7 +457,7 @@ def GAE(A, e, L, R, St, r, m, crads = {'S':[], 'L':[]}):
                     crads['L'] = crads['L'][:-1]
 
     # Multiplicative strategy on the set of unreached small odd prime numbers
-    unreached_sop = [ global_L[i] for i in range(len(global_L)) if m[i] > 0 ]
+    unreached_sop = [ global_L[i] for i in range(len(global_L)) if m[i] > 0 and global_L[i] not in crads['L']]
     remainder_sop = [ l for l in global_L if l not in unreached_sop ]
 
     while len(unreached_sop) > 0:
@@ -474,15 +473,16 @@ def GAE(A, e, L, R, St, r, m, crads = {'S':[], 'L':[]}):
                 T_p = xMUL(T_p, E_k, global_L.index(l))
                 T_m = xMUL(T_m, E_k, global_L.index(l))
 
-        current_n = len(unreached_sop) + len(crads['L'][-1:])
+        current_n = len(unreached_sop)
         E_k, m, e = evaluate_strategy(
             E_k,
             list([list(T_m), list(T_p)]),
             crads['L'][-1:] + unreached_sop,
-            list(range(current_n - 1, 0, -1)),
-            current_n,
+            list(range(current_n - 1 + len(crads['L'][-1:]), 0, -1)),
+            len(crads['L'][-1:]) + current_n,
             m,
-            e
+            e,
+            crads_prime = crads['L'][-1:]
         )
         if crads['L'] != []:
             if m[global_L.index(crads['L'][-1])] == 0:
