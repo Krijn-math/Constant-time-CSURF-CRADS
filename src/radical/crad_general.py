@@ -2,7 +2,7 @@ from math import copysign
 from src.fp import *
 from src.montgomery import xDBL, xMUL
 
-raw = '_raw' * setting.raw
+raw = '_radicals' * setting.radicals
 vectorbound = "csurf_" + setting.prime  + "_" + setting.style + "_m" + str(setting.exponent) + raw
 exec("from tmp.%s import m, e_2, e_3, e_5, e_7" % vectorbound)
 

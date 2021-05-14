@@ -22,7 +22,7 @@ from src.radical.crad_7 import e_7
 
 # ==========================================================================
 # Reading the suitable bounds
-raw = '_raw' * setting.raw
+raw = '_radicals' * setting.radicals
 vectorbound = "csurf_" + setting.prime  + "_" + setting.style + "_m" + str(setting.exponent) + raw
 exec("from tmp.%s import m, e_2, e_3, e_5, e_7" % vectorbound)
 # ==========================================================================
@@ -75,7 +75,7 @@ except IOError:
 print("// All the experiments are assuming S = %1.6f x M and a = %1.6f x M. The measures are given in millions of field operations." % (SQR, ADD))
 
 data_crads = {'S':[]}
-if setting.algorithm == 'csurf' and not setting.raw:
+if setting.algorithm == 'csurf' and setting.radicals:
     m = [e_3] + [e_5] + [e_7] + m[3:]
     for i in range(len(S_out)):
         # It doesn't matter the last small ell_i, it only add log2(n_i) scalar point multiplications
@@ -93,7 +93,7 @@ def keygen():
     priv = [random.randint(-e_2, e_2)] + random_key(m)
 
     set_zero_ops()
-    if not setting.raw:
+    if setting.radicals:
         if (len(temporal_m) == 1) or ((len(temporal_m) == 2) and (0 in temporal_m)):
             # This branch is focused when m degree-ell isogeny constructions are required for each ell playing on the GAE
             pub = GAE([2, 4], priv[1:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m, crads = {**data_crads, 'L':[7, 5, 3]})
@@ -134,7 +134,7 @@ def derive(priv, pub : int):
     curve = [ fp_add(pub, 2), 4]
 
     set_zero_ops()
-    if not setting.raw:
+    if setting.radicals:
         if (len(temporal_m) == 1) or ((len(temporal_m) == 2) and (0 in temporal_m)):
             # This branch is focused when m degree-ell isogeny constructions are required for each ell playing on the GAE
             ss = GAE(curve, priv[1:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m, crads = {**data_crads, 'L':[7, 5, 3]})

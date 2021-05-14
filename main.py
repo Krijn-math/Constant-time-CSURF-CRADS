@@ -3,7 +3,7 @@ exec("from %s import *" % setting.algorithm)
 
 print("// The exponents bounds and private keys go from the smallest to the largest small odd primes ell_i\'s\n")
 if (setting.algorithm == 'csurf'):
-    if not setting.raw:
+    if setting.radicals:
         privkey_print('Exponents bounds', [e_2] + [e_3] + [e_5] + [e_7] + m[3:])
     else:
         privkey_print('Exponents bounds', [e_2] + m)

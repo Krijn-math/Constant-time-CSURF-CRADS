@@ -199,8 +199,9 @@ def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
     pos = global_L.index(L[0])                                      # Current element of global_L to be required
     if isinfinity(ramifications[0]) == False:
 
-        if crads_prime == []:
-            if m[pos] > 0:
+        if m[pos] > 0:
+            
+            if crads_prime == []:
 
                 b_i = isequal[e[pos] == 0]
 
@@ -229,23 +230,23 @@ def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
                 v[pos] -= 1
                 u[pos] -= (b_i ^ 1)
 
-        else:
-            # Radical isogeny part
-            A_i = coeff(E_i)
-            #print(f'Affine coeff:\t{hex(A_i)};\t\texp:\t{e[pos]};\t\tell:\t{crads_prime[0]}')
-
-            if crads_prime[0] == 3:
-                A_i = act_with_three_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0])
-            elif crads_prime[0] == 5:
-                A_i = act_with_five_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0])
-            elif crads_prime[0] == 7:
-                A_i = act_with_seven_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0])
             else:
-                print("not implemented")
-                
-            v[pos] = 0
-            u[pos] = 0
-            E_i = [ fp_add(A_i, 2), 4 ]
+                # Radical isogeny part
+                A_i = coeff(E_i)
+                #print(f'Affine coeff:\t{hex(A_i)};\t\texp:\t{e[pos]};\t\tell:\t{crads_prime[0]}')
+
+                if crads_prime[0] == 3:
+                    A_i = act_with_three_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0])
+                elif crads_prime[0] == 5:
+                    A_i = act_with_five_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0])
+                elif crads_prime[0] == 7:
+                    A_i = act_with_seven_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0])
+                else:
+                    print("not implemented")
+                    
+                v[pos] = 0
+                u[pos] = 0
+                E_i = [ fp_add(A_i, 2), 4 ]
 
     return E_i, v, u
 
@@ -323,7 +324,7 @@ def GAE(A, e, L, R, St, r, m, crads = {'S':[], 'L':[]}):
                 if [l] != crads['L'][-1:]:
                     T_p = xMUL(T_p, E_k, global_L.index(l))
 
-            if setting.algorithm == 'csurf' and not setting.raw:
+            if setting.algorithm == 'csurf' and setting.radicals:
                 Strategy = { True:crads['S'][j], False:St[j] }[crads['L'][-1:] != []]
             else:
                 Strategy = St[j]

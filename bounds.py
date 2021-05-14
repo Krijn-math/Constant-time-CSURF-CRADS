@@ -89,11 +89,11 @@ def optimal_bounds(L, b, r, keyspace):
     return (e, RNC)
 
 # CSURF without radical isogenies will be saved with the suffix _raw
-raw = '_raw' * setting.raw
+raw = '_radicals' * setting.radicals
 
 try:
     # Reading the suitable bounds
-    if not setting.raw and setting.algorithm == 'csurf':
+    if setting.radicals and setting.algorithm == 'csurf':
         # The use of radical isogenies assumes we have precomputed an optimal bound for CSURF using only degree-2 isogenies
         vectorbound = "csurf_" + setting.prime  + "_" + setting.style + "_m" + str(setting.exponent) + '_raw'
     else:
@@ -198,7 +198,7 @@ def main():
             e_init = e
             RNC_prev = RNC
             # In terms of cost: deg-2 < deg-3 < deg-5 < deg-7 ... Thus, we can assume e_2 >= e_3 >= e_5 >= e_7
-            if not setting.raw:
+            if setting.radicals:
                 print(f'Cost assuming only degree-2 isogenies:\t{measure(RNC) + cost_rad(2, e_2)}')
                 print(f'Number of degree-2 isogeny constructions on the surface:\t{e_2}')
                 RNC = (measure(RNC) + cost_rad(2, e_2)) * 1.25

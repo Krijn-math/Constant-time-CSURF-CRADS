@@ -17,7 +17,7 @@ except:
 
 print("// The exponents bounds and private keys go from the smallest to the largest small odd primes ell_i\'s\n")
 if (setting.algorithm == 'csurf'):
-    if not setting.raw:
+    if setting.radicals:
         privkey_print('Exponents bounds', [e_2] + [e_3] + [e_5] + [e_7] + m[3:])
     else:
         privkey_print('Exponents bounds', [e_2] + m)
@@ -36,12 +36,10 @@ A = 0   # E : y² = x³ + x
 for main_i in range(setting.benchmark):
 
     if (setting.algorithm == 'csurf'):
-        if not setting.raw:
-            a = [ random.randint(0, e_i) for e_i in [e_2, e_3, e_5, e_7] ] + random_key(m)[3:] # Random private key
-        else:
-            a = [random.randint(0, e_2)] + random_key(m) # Random private key
+        a = [random.randint(-e_2, e_2)] + random_key(m) # Random private key
     else:
         a = random_key(m)                       # Random private key
+
     A, SAMPLE_VELU[main_i], SAMPLE_RAD[main_i], SAMPLE[main_i] = derive(a, A)        # Random public curve E : y² = x³ + Ax² + x
     set_zero_ops()
     V = validate(A)

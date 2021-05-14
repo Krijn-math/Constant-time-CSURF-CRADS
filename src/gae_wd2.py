@@ -421,7 +421,7 @@ def GAE(A, e, L, R, St, r, m, crads = {'S':[], 'L':[]}):
 
     E_k = list(A)
     n = len(L)
-            
+
     for j in range(0, n, 1):
 
         for k in range(0, r[j], 1):
@@ -437,7 +437,7 @@ def GAE(A, e, L, R, St, r, m, crads = {'S':[], 'L':[]}):
                     T_p = xMUL(T_p, E_k, global_L.index(l))
                     T_m = xMUL(T_m, E_k, global_L.index(l))
 
-            if setting.algorithm == 'csurf' and not setting.raw:
+            if setting.algorithm == 'csurf' and setting.radicals:
                 Strategy = { True:crads['S'][j], False:St[j] }[crads['L'][-1:] != []]
             else:
                 Strategy = St[j]

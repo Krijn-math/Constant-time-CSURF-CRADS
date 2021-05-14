@@ -19,7 +19,7 @@ def getinputs(args=sys.argv[1:]):
     parser.add_argument("-e", "--exponent", type=int, help="For determining the number k of small odd primes to be used. The keyspace size is either (2e + 1)^k [wd2 style] or (e + 1)^n [wd1 and df styles].", default=1)
     parser.add_argument("-u", "--units", dest='units', action='store_true', help="Used to precompute the running time of each small odd prime degree isogeny construction and evaluation with velusqrt formulae (required only at first run).")
     parser.add_argument("-v", "--verbose", dest='verbose', action='store_true', help="Verbose mode.")
-    parser.add_argument("-r", "--raw", dest='raw', action='store_true', help="Raw mode (only degree-2 isogenies on the surface.")
+    parser.add_argument("-r", "--radical", dest='radicals', action='store_true', help="Radical isogenies mode (not only degree-2 isogenies on the surface.")
 
     if len(sys.argv)==1:
         parser.print_help(sys.stderr)
