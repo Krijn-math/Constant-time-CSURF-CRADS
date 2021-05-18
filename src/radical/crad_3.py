@@ -351,22 +351,30 @@ def nine_iso_projective(X, Z):
     inv_T1 = fp_add(inv_T1, XZ2)
     inv_T13 = fp_sqr(inv_T1)
     inv_T13 = fp_mul(inv_T13, inv_T1)       #(X^3 - X^2*Z + X*Z^2)^3
+       
+    _2X2Z = fp_add(X2Z, X2Z)
+    _6X2Z = fp_add(_2X2Z, fp_add(_2X2Z, _2X2Z))
+    _3XZ2 = fp_add(XZ2, fp_add(XZ2, XZ2))
     
-    inv_T2 = fp_sub(X3, fp_mul(6, X2Z))
-    inv_T2 = fp_add(inv_T2, fp_mul(3, XZ2))
+    inv_T2 = fp_sub(X3, _6X2Z)
+    inv_T2 = fp_add(inv_T2, _3XZ2)
     inv_T2 = fp_add(inv_T2, Z3)             #(X^3 - 6x^2*z + 3XZ^2 + Z^3) 
     
     inv = fp_mul(inv_T13, inv_T2)
     inv = fp_mul(Z6, inv)
-
+    
+    _2XZ = fp_add(XZ, XZ)
+    _4XZ = fp_add(_2XZ, _2XZ)
+    _5XZ = fp_add(_4XZ, XZ)
+    
     #S1 = S1p/Z^2
     S1p = fp_add(X2, X2)
-    S1p = fp_sub(S1p, fp_mul(5, XZ))
+    S1p = fp_sub(S1p, _5XZ)
     S1p = fp_add(S1p, fp_add(Z2, Z2))       #(2X^2 - 5XZ + 2Z)
     
     #S2 = S2p/Z^3
     S2p = fp_add(X3, Z3)
-    S2p = fp_mul(-1, S2p)                   #(-X^3 - Z^3)
+    S2p = fp_sub(0, S2p)                   #(-X^3 - Z^3)
     
     #S3 = S3p/Z^4
     S3p = fp_sub(XZ, X2)
@@ -375,37 +383,65 @@ def nine_iso_projective(X, Z):
     S3p = fp_add(S3p, fp_add(S3p, S3p))     #(-X^2 + XZ - Z^2)*3X^2
     
     #S4 = S4p/Z^6    
-    S4p = fp_sub(X5, fp_mul(6, X4Z))
-    S4p = fp_add(S4p, fp_mul(8, X3Z2))
-    S4p = fp_add(S4p, fp_mul(-8, X2Z3))
-    S4p = fp_add(S4p, fp_mul(3, XZ4))
+    _2X4Z = fp_add(X4Z, X4Z)
+    _6X4Z = fp_add(_2X4Z, fp_add(_2X4Z, _2X4Z))
+    _2X3Z2 = fp_add(X3Z2, X3Z2)
+    _8X3Z2 = fp_add(fp_add(_2X3Z2, _2X3Z2), fp_add(_2X3Z2, _2X3Z2))
+    _2X2Z3 = fp_add(X2Z3, X2Z3)
+    _8X2Z3 = fp_add(fp_add(_2X2Z3, _2X2Z3), fp_add(_2X2Z3, _2X2Z3))
+    _3XZ4 = fp_add(XZ4, fp_add(XZ4, XZ4))
+    
+    S4p = fp_sub(X5, _6X4Z)
+    S4p = fp_add(S4p, _8X3Z2)
+    S4p = fp_sub(S4p, _8X2Z3)
+    S4p = fp_add(S4p, _3XZ4)
     S4p = fp_sub(S4p, Z5)
     S4p = fp_mul(S4p, X)                    #(X5 - 6*X^4*Z + 8*X^3*Z^2 - 8*X^2*Z^3 + 3*X*Z^4 - Z^5)*X
     
     #S5 = S5p/Z^7
-    S5p = fp_sub(fp_add(X5, X5), fp_mul(8, X4Z))
-    S5p = fp_add(S5p, fp_mul(14, X3Z2))
-    S5p = fp_add(S5p, fp_mul(-16, X2Z3))
-    S5p = fp_add(S5p, fp_mul(10, XZ4))
+    _8X4Z = fp_add(_2X4Z, _6X4Z)
+    _14X3Z2 = fp_add(_8X3Z2, fp_sub(_8X3Z2, _2X3Z2))
+    _16X2Z3 = fp_add(_8X2Z3, _8X2Z3)
+    _4XZ4 = fp_add(_3XZ4, XZ4)
+    _10XZ4 = fp_add(_4XZ4, fp_add(_3XZ4, _3XZ4))
+    
+    S5p = fp_sub(fp_add(X5, X5), _8X4Z)
+    S5p = fp_add(S5p, _14X3Z2)
+    S5p = fp_sub(S5p, _16X2Z3)
+    S5p = fp_add(S5p, _10XZ4)
     S5p = fp_sub(S5p, fp_add(fp_add(Z5, Z5), fp_add(Z5, Z5)))
     S5p = fp_mul(S5p, X2)
     
     #S6 = S6p/Z^8
-    S6p = fp_sub(X6, fp_mul(6, X5Z))
-    S6p = fp_add(S6p, fp_mul(12, X4Z2))
-    S6p = fp_add(S6p, fp_mul(-16, X3Z3))
-    S6p = fp_add(S6p, fp_mul(12, X2Z4))
-    S6p = fp_add(S6p, fp_mul(-6, XZ5))
+    _2X5Z = fp_add(X5Z, X5Z)
+    _6X5Z = fp_add(_2X5Z, fp_add(_2X5Z, _2X5Z))
+    _2X4Z2 = fp_add(X4Z2, X4Z2)
+    _4X4Z2 = fp_add(_2X4Z2, _2X4Z2)
+    _12X4Z2 = fp_add(_4X4Z2, fp_add(_4X4Z2, _4X4Z2))
+    _2X3Z3 = fp_add(X3Z3, X3Z3)
+    _8X3Z3 = fp_add(fp_add(_2X3Z3, _2X3Z3), fp_add(_2X3Z3, _2X3Z3))
+    _16X3Z3 = fp_add(_8X3Z3, _8X3Z3)
+    _2X2Z4 = fp_add(X2Z4, X2Z4)
+    _4X2Z4 = fp_add(_2X2Z4, _2X2Z4)
+    _12X2Z4 = fp_add(_4X2Z4, fp_add(_4X2Z4, _4X2Z4))
+    _2XZ5 = fp_add(XZ5, XZ5)
+    _6XZ5 = fp_add(_2XZ5, fp_add(_2XZ5, _2XZ5))
+    
+    S6p = fp_sub(X6, _6X5Z)
+    S6p = fp_add(S6p, _12X4Z2)
+    S6p = fp_sub(S6p, _16X3Z3)
+    S6p = fp_add(S6p, _12X2Z4)
+    S6p = fp_sub(S6p, _6XZ5)
     S6p = fp_add(S6p, Z6)
     S6p = fp_mul(S6p, X2)                #(X6 - 6*X5Z + 12*X4Z2 - 16*X3Z3 + 12*X2Z4 - 6*XZ5 + Z6)*X2
     
     #S7 = S7p/Z^9
     S7p = fp_add(X6, X6)
-    S7p = fp_sub(fp_mul(3, X5Z), S7p)
-    S7p = fp_add(S7p, fp_mul(-3, X4Z2))
+    S7p = fp_sub(fp_add(_2X5Z, X5Z), S7p)
+    S7p = fp_sub(S7p, fp_add(_2X4Z2, X4Z2))
     S7p = fp_sub(S7p, X3Z3)
-    S7p = fp_add(S7p, fp_mul(3, X2Z4))
-    S7p = fp_add(S7p, fp_mul(-3, XZ5))
+    S7p = fp_add(S7p, fp_add(_2X2Z4, X2Z4))
+    S7p = fp_sub(S7p, fp_add(_2XZ5, XZ5))
     S7p = fp_add(S7p, Z6)
     S7p = fp_mul(S7p, X3)               #(-2*X6 + 3*X5Z - 3*X4Z2 - X3Z3 + 3*X2Z4 - 3*XZ5 + Z6)*X3
 
@@ -486,17 +522,21 @@ def act_with_nine_on_Montgomery(A, exp, Tp_proj = None):
 
     A_inv = fp_sub(M, N)
     A_inv = fp_sub(A_inv, 1)        
-    A_inv = crad_inv(A_inv)           #1/(M-N-1)
+#    A_inv = crad_inv(A_inv)           #this step can be removed because of projective version
 
     A = fp_sub(M, 1)
     A = fp_sqr(A)                   #(M - 1)^2
-    A = fp_mul(A, A_inv)            #(M - 1)^2/(M-N-1)
+#    A = fp_mul(A, A_inv)            #(M - 1)^2/(M-N-1)
+    
+    X, Z = A, A_inv
     
     for i in range(0, abs(exp), 1):         #no -1 because no last velu
-        A = nine_iso(A)
+        X, Z = nine_iso_projective(X,Z)
 
     for i in range(abs(exp), e_3 // 2, 1):        # Exponent bound of 3 is assumed to be e_3, thus c_3 // 2 degree-9 radical isogenies
-        dummy = nine_iso(A)
+        dummyX, dummyZ = nine_iso_projective(X,Z)
+
+    A = pro_to_aff_nine(X, Z)
 
     A2 = fp_sqr(A)
     A3 = fp_mul(A2,A)
