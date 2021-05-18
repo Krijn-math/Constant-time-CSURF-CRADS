@@ -345,7 +345,7 @@ def nine_iso_projective(X, Z):
     
     C = fp_mul(T1, T23)
     C = fp_mul(Z7, C)                   #Z^7 * (X^5 - X^4*Z) (X^2 - X*Z + Z^2)^3
-    C = fp_exp(C, novem_exp)
+    C = crad_novem(C)
     
     inv_T1 = fp_sub(X3, X2Z)
     inv_T1 = fp_add(inv_T1, XZ2)
@@ -453,7 +453,7 @@ def nine_iso_projective(X, Z):
     return output, inv
 
 def pro_to_aff_nine(X,Z):
-    A = fp_inv(Z)
+    A = crad_inv(Z)
     A = fp_mul(X, A)
     
     return A
