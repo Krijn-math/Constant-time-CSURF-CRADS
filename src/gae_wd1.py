@@ -105,6 +105,8 @@ def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
             T = list( ramifications[-1] )   # New ramification
             for j in range(prev, prev + strategy[k], 1):
                 T = xMUL(T, E_i, global_L.index(L[j]))
+                if setting.algorithm == 'csurf' and setting.radicals and global_L.index(L[j]) == 0:
+                    T = xMUL(T, E_i, 0) # Removing extra factor-3
 
             ramifications.append(T)
             prev += strategy[k]
@@ -114,7 +116,7 @@ def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
         if v[pos] > 0:     # Maximum number of degree-l_{pos} isogeny constructions?
 
             # At this step, ramifications[-1] is the i-th leaf
-            if isinfinity(ramifications[-1]) == False:
+            if not isinfinity(ramifications[-1]):
 
                 # Dummy or NOT Dummy degree-(l_{n-1-i}) isogeny construction, that's the question?
                 b_i = isequal[u[pos] == 0]
@@ -197,7 +199,7 @@ def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
         ramifications.pop()
 
     pos = global_L.index(L[0])                                      # Current element of global_L to be required
-    if isinfinity(ramifications[0]) == False:
+    if not isinfinity(ramifications[0]):
 
         if m[pos] > 0:
             
@@ -231,22 +233,27 @@ def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
                 u[pos] -= (b_i ^ 1)
 
             else:
-                # Radical isogeny part
-                A_i = coeff(E_i)
-                #print(f'Affine coeff:\t{hex(A_i)};\t\texp:\t{e[pos]};\t\tell:\t{crads_prime[0]}')
+                assert(not isinfinity(ramifications[0]))
+                kernel = xMUL(ramifications[0], E_i, 0)
 
-                if crads_prime[0] == 3:
-                    A_i = act_with_three_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0])
-                elif crads_prime[0] == 5:
-                    A_i = act_with_five_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0])
-                elif crads_prime[0] == 7:
-                    A_i = act_with_seven_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0])
-                else:
-                    print("not implemented")
-                    
-                v[pos] = 0
-                u[pos] = 0
-                E_i = [ fp_add(A_i, 2), 4 ]
+                if not isinfinity(kernel):
+                    # Radical isogeny part
+                    A_i = coeff(E_i)
+                    #print(f'Affine coeff:\t{hex(A_i)};\t\texp:\t{e[pos]};\t\tell:\t{crads_prime[0]}')
+
+                    if crads_prime[0] == 3:
+                        #A_i = act_with_three_on_Montgomery(A_i, e[pos], Tp_proj = kernel)
+                        A_i = act_with_nine_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0])
+                    elif crads_prime[0] == 5:
+                        A_i = act_with_five_on_Montgomery(A_i, e[pos], Tp_proj = kernel)
+                    elif crads_prime[0] == 7:
+                        A_i = act_with_seven_on_Montgomery(A_i, e[pos], Tp_proj = kernel)
+                    else:
+                        print("not implemented")
+
+                    v[pos] = 0
+                    u[pos] = 0
+                    E_i = [ fp_add(A_i, 2), 4 ]
 
     return E_i, v, u
 
@@ -323,12 +330,15 @@ def GAE(A, e, L, R, St, r, m, crads = {'S':[], 'L':[]}):
             for l in R[j]:
                 if [l] != crads['L'][-1:]:
                     T_p = xMUL(T_p, E_k, global_L.index(l))
+                    if l == 3 and setting.radicals and setting.algorithm == 'csurf':
+                        assert(global_L.index(l) == 0)
+                        T_p = xMUL(T_p, E_k, 0)
 
             if setting.algorithm == 'csurf' and setting.radicals:
                 Strategy = { True:crads['S'][j], False:St[j] }[crads['L'][-1:] != []]
             else:
                 Strategy = St[j]
-            
+
             E_k, m, e = evaluate_strategy(
                 E_k,
                 T_p,
@@ -356,6 +366,9 @@ def GAE(A, e, L, R, St, r, m, crads = {'S':[], 'L':[]}):
         for l in remainder_sop:
             if [l] != crads['L'][-1:]:
                 T_p = xMUL(T_p, E_k, global_L.index(l))
+                if l == 3 and setting.radicals and setting.algorithm == 'csurf':
+                    assert(global_L.index(l) == 0)
+                    T_p = xMUL(T_p, E_k, 0)
 
         current_n = len(unreached_sop)
         E_k, m, e = evaluate_strategy(

@@ -251,11 +251,12 @@ def elligator(A):
     Tp_proj = [Tp_X, C_times_u_squared_minus_one]
     Tm_proj = [Tm_X, C_times_u_squared_minus_one]
 
-    # Multiplying by 3
     if cofactor_3:
+        # Multiplying by 3
         assert(L[0] == 3)
-        Tp_proj = xMUL(Tp_proj, A, 0)
-        Tm_proj = xMUL(Tm_proj, A, 0)
+        if setting.algorithm == 'csidh' or not setting.radicals:
+            Tp_proj = xMUL(Tp_proj, A, 0)
+            Tm_proj = xMUL(Tm_proj, A, 0)
 
     if cofactor_5:
         # Multiplying by 5
@@ -311,9 +312,12 @@ def issupersingular(A):
     while(True):
 
         T_p, _ = elligator(A)
+        if setting.algorithm == 'csurf' and setting.radicals:
+            T_p = xMUL(T_p, A, 0)
+
         for i in range(0, exponent_of_two, 1):
             T_p = xDBL(T_p, A)
-
+    # Removing extra factor-3
         P = prime_factors(T_p, A, range(0, n , 1))
 
         bits_of_the_order = 0

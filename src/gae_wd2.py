@@ -116,6 +116,9 @@ def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
             T = list( [list(ramifications[-1][0]), list(ramifications[-1][1])] )
             for j in range(prev, prev + strategy[k], 1):
                 T = list([xMUL(T[0], E_i, global_L.index(L[j])), xMUL(T[1], E_i, global_L.index(L[j])) ])
+                if setting.algorithm == 'csurf' and setting.radicals and global_L.index(L[j]) == 0:
+                    # Removing extra factor-3
+                    T = list([xMUL(T[0], E_i, 0), xMUL(T[1], E_i, 0) ])
 
             ramifications.append(list([list(T[0]), list(T[1])]))
             prev += strategy[k]
@@ -134,6 +137,8 @@ def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
             T[0][1], T[1][1] = fp_cswap(T[0][1], T[1][1], c_i)
             for j in range(prev, prev + strategy[k], 1):
                 T[0] = list(xMUL(T[0], E_i, global_L.index(L[j])))    # A single scalar multiplication is required
+                if setting.algorithm == 'csurf' and setting.radicals and global_L.index(L[j]) == 0:
+                    T[0] = list(xMUL(T[0], E_i, 0))    # A single scalar multiplication is required
             
             T[0][0], T[1][0] = fp_cswap(T[0][0], T[1][0], c_i)
             T[0][1], T[1][1] = fp_cswap(T[0][1], T[1][1], c_i)
@@ -152,7 +157,7 @@ def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
             ramifications[-1][0][0], ramifications[-1][1][0] = fp_cswap(ramifications[-1][0][0], ramifications[-1][1][0], c_i)  # XT_+ <-> XT_-
             ramifications[-1][0][1], ramifications[-1][1][1] = fp_cswap(ramifications[-1][0][1], ramifications[-1][1][1], c_i)  # ZT_+ <-> ZT_-
 
-            if isinfinity(ramifications[-1][0]) == False:
+            if not isinfinity(ramifications[-1][0]):
 
                 # T_+ or T_- ?
                 # Root
@@ -279,7 +284,7 @@ def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
             ramifications[-1][0][0], ramifications[-1][1][0] = fp_cswap(ramifications[-1][0][0], ramifications[-1][1][0], c_i)
             ramifications[-1][0][1], ramifications[-1][1][1] = fp_cswap(ramifications[-1][0][1], ramifications[-1][1][1], c_i)
 
-            if isinfinity(ramifications[-1][0]) == False:
+            if not isinfinity(ramifications[-1][0]):
 
                 for j in range(0, len(moves) - 1, 1):
 
@@ -307,7 +312,7 @@ def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
     ramifications[0][0][0], ramifications[0][1][0] = fp_cswap(ramifications[0][0][0], ramifications[0][1][0], c_i)
     ramifications[0][0][1], ramifications[0][1][1] = fp_cswap(ramifications[0][0][1], ramifications[0][1][1], c_i)
     
-    if isinfinity(ramifications[0][0]) == False:
+    if not isinfinity(ramifications[0][0]):
 
         if m[pos] > 0:
 
@@ -321,7 +326,7 @@ def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
                 else:
                     # -------------------------------------------------------------
                     # Parameters sJ and sI correspond with the parameters b and b' from example 4.12 of https://eprint.iacr.org/2020/341
-                    # These paramters are required in KPs, xISOG, and xEVAL
+                    # These parameters are required in KPs, xISOG, and xEVAL
                     if global_L[pos] == 3:
                         b = 0
                         c = 0
@@ -341,22 +346,26 @@ def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
                 u[pos] -= (s_i * (b_i ^ 1))
 
             else:
-                # Radical isogeny part
-                A_i = coeff(E_i)
-                #print(f'Affine coeff:\t{hex(A_i)};\t\texp:\t{e[pos]};\t\tell:\t{crads_prime[0]}')
+                assert(not isinfinity(ramifications[0][0]))
+                kernel = xMUL(ramifications[0][0], E_i, 0)
 
-                if crads_prime[0] == 3:
-                    A_i = act_with_three_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0][0])
-                elif crads_prime[0] == 5:
-                    A_i = act_with_five_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0][0])
-                elif crads_prime[0] == 7:
-                    A_i = act_with_seven_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0][0])
-                else:
-                    print("not implemented")
-                    
-                v[pos] = 0
-                u[pos] = 0
-                E_i = [ fp_add(A_i, 2), 4 ]
+                if not isinfinity(kernel):
+                    # Radical isogeny part
+                    A_i = coeff(E_i)
+                    #print(f'Affine coeff:\t{hex(A_i)};\t\texp:\t{e[pos]};\t\tell:\t{crads_prime[0]}')
+                    if crads_prime[0] == 3:
+                        #A_i = act_with_three_on_Montgomery(A_i, e[pos], Tp_proj = kernel)
+                        A_i = act_with_nine_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0][0])
+                    elif crads_prime[0] == 5:
+                        A_i = act_with_five_on_Montgomery(A_i, e[pos], Tp_proj = kernel)
+                    elif crads_prime[0] == 7:
+                        A_i = act_with_seven_on_Montgomery(A_i, e[pos], Tp_proj = kernel)
+                    else:
+                        print("not implemented")
+
+                    v[pos] = 0
+                    u[pos] = 0
+                    E_i = [ fp_add(A_i, 2), 4 ]
         
     return E_i, v, u
 
@@ -371,7 +380,7 @@ def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
 def geometric_serie(m, l):
     
     l_float = float(l)
-    m_float = float(m);
+    m_float = float(m)
     return floor( (m_float * l_float) / (l_float - 1.0) + 0.5 )
 
 '''
@@ -436,6 +445,10 @@ def GAE(A, e, L, R, St, r, m, crads = {'S':[], 'L':[]}):
                 if [l] != crads['L'][-1:]:
                     T_p = xMUL(T_p, E_k, global_L.index(l))
                     T_m = xMUL(T_m, E_k, global_L.index(l))
+                    if l == 3 and setting.radicals and setting.algorithm == 'csurf':
+                        assert(global_L.index(l) == 0)
+                        T_p = xMUL(T_p, E_k, 0)
+                        T_m = xMUL(T_m, E_k, 0)
 
             if setting.algorithm == 'csurf' and setting.radicals:
                 Strategy = { True:crads['S'][j], False:St[j] }[crads['L'][-1:] != []]
@@ -472,6 +485,10 @@ def GAE(A, e, L, R, St, r, m, crads = {'S':[], 'L':[]}):
             if [l] != crads['L'][-1:]:
                 T_p = xMUL(T_p, E_k, global_L.index(l))
                 T_m = xMUL(T_m, E_k, global_L.index(l))
+                if l == 3 and setting.radicals and setting.algorithm == 'csurf':
+                    assert(global_L.index(l) == 0)
+                    T_p = xMUL(T_p, E_k, 0)
+                    T_m = xMUL(T_m, E_k, 0)
 
         current_n = len(unreached_sop)
         E_k, m, e = evaluate_strategy(
