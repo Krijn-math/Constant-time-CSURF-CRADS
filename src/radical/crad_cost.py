@@ -43,12 +43,13 @@ cost_novem_root = cost_exponentiation(novem_exp)
 def cost_rad(ell, exp):
     isogeny_cost = exp*cost_single_isogeny(ell)
     overhead = cost_overhead(ell)
-    if ell % 2 == 0:
-        sampling = 0
-    else:
-        sampling = cost_sampling(ell)
+    ## because of improved strategy we assume no cost for sampling
+    # if ell % 2 == 0:
+    #     sampling = 0
+    # else:
+    #     sampling = cost_sampling(ell)
     
-    total = isogeny_cost + overhead + sampling
+    total = isogeny_cost + overhead #+ sampling
     
     return ceil(total)
 
@@ -66,7 +67,7 @@ def cost_single_isogeny(ell):
     elif ell == 7:
         cost = cost_sept_root + C_S*3 + 28 + C_A*20
     elif ell == 9:
-        cost = cost_novem_root + cost_inv + C_S*5 + 35 + C_A*91        
+        cost = cost_novem_root + C_S*10 + 75 + C_A*121        
 
     return cost
 
@@ -82,6 +83,9 @@ cost_mont_tate = 1*cost_sq_root + 0*cost_tri_root + 1*cost_inv + C_S*1 + 9 + C_A
 cost_tate_mont = 2*cost_sq_root + 1*cost_tri_root + 1*cost_inv + C_S*7 + 23 + C_A*49
 cost_mont_tate_mont = cost_mont_tate + cost_tate_mont
 
+cost_mont_tate_nine_pro = 1*cost_sq_root + 0*cost_tri_root + 0*cost_inv + C_S*7 + 13 + C_A*13
+cost_weier_nine_pro = 2*cost_sq_root + 1*cost_tri_root + 1*cost_inv + C_S*11 + 33 + C_A*65 ##includes inversion to affine point
+
 #all of these costs have been calculated from the other crad_#.py files
 def cost_overhead(ell):
     
@@ -96,7 +100,7 @@ def cost_overhead(ell):
     elif ell == 7:
         cost_ops = 0*cost_sq_root + 1*cost_inv + C_S*1 + 3 + C_A*4
     elif ell == 9:
-        cost_ops = 0*cost_sq_root + 1*cost_inv + C_S*3 + 4 + C_A*9
+        cost_ops = 0*cost_sq_root + 0*cost_inv + C_S*4 + 7 + C_A*6
         
     if ell == 2:
         cost_functs = cost_mont_min_mont
@@ -109,12 +113,13 @@ def cost_overhead(ell):
     elif ell == 7:
         cost_functs = cost_mont_tate_mont
     elif ell == 9:
-        cost_functs = cost_mont_tate_mont
-    
+        cost_functs = cost_mont_tate_nine_pro + cost_weier_nine_pro
+        
     cost = cost_ops + cost_functs
     return cost
 
-
+## here the cost of sampling is used as needed in the naive strategy of performing radical isogenies
+## in the improved strategy, the cost of sampling is close to negligible
 def cost_sampling(ell):
 
     if ell != 2 and ell != 4:
