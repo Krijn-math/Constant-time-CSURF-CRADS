@@ -95,7 +95,7 @@ try:
     # Reading the suitable bounds
     if setting.radicals and setting.algorithm == 'csurf':
         # The use of radical isogenies assumes we have precomputed an optimal bound for CSURF using only degree-2 isogenies
-        vectorbound = "csurf_" + setting.prime  + "_" + setting.style + "_m" + str(setting.exponent) + '_raw'
+        vectorbound = "csurf_" + setting.prime  + "_" + setting.style + "_m" + str(setting.exponent) + '_radicals'
     else:
         # CSURF without degree-2 isogenies takes as initial optiimal bounds the given ones by CSIDH
         vectorbound = "csidh_" + setting.prime  + "_" + setting.style + "_m" + str(setting.exponent)
@@ -199,74 +199,78 @@ def main():
             RNC_prev = RNC
             # In terms of cost: deg-2 < deg-3 < deg-5 < deg-7 ... Thus, we can assume e_2 >= e_3 >= e_5 >= e_7
             if setting.radicals:
-                print(f'Cost assuming only degree-2 isogenies:\t{measure(RNC) + cost_rad(2, e_2)}')
+                print(f'Cost assuming best CSURF-configuration:\t{measure(RNC)/(10**6) + cost_rad(4,ceil(e_2/2.0))/(10**6)}')
                 print(f'Number of degree-2 isogeny constructions on the surface:\t{e_2}')
-                RNC = (measure(RNC) + cost_rad(2, e_2)) * 1.25
-                print(f'Base cost (1.25 times the above cost):\t{RNC}')
+                RNC = (measure(RNC) + cost_rad(4,ceil(e_2/2.0))) * 1.25
+                print(f'Base cost (1.25 times the above cost):\t{RNC/(10**6)}')
                 for e_3 in range(1, e_2 + 1, 1):
-                    for e_5 in range(1, e_3 + 1, 1):
-                        for e_7 in range(1, e_5 + 1, 1):
-                            # ---
-                            keyspace = KEYSPACE - float(security([e_2, e_3, e_5, e_7], 4))
-                            e_tmp = list(e_init)[:(n - 3)]
-                            assert(len(e_tmp) == (n - 3))
-                            # Increasing to reach the right keyspace size
-                            i = 0
-                            while security(e_tmp, n - 3) < keyspace:
-                                e_tmp[i] += 1
-                                i = (i + 1) % (n - 3)
-                            # Decreasing to reach the right keyspace size
-                            i = 0
-                            while security(e_tmp, n - 3) >= keyspace:
-                                if e_tmp[i] > 0:
-                                    e_tmp[i] -= 1
-                                i = (i + 1) % (n - 3)
+                    #for e_5 in range(0, e_3 + 1, 1):
+                    #    for e_7 in range(0, e_5 + 1, 1):
+                    # ---
+                    #keyspace = KEYSPACE - float(security([e_2, e_3, e_5, e_7], 4))
+                    keyspace = KEYSPACE - float(security([e_2, e_3], 2))
+                    e_tmp = list(e_init)[:(n - 3)]
+                    assert(len(e_tmp) == (n - 3))
+                    # Increasing to reach the right keyspace size
+                    i = 0
+                    while security(e_tmp, n - 3) < keyspace:
+                        e_tmp[i] += 1
+                        i = (i + 1) % (n - 3)
+                    # Decreasing to reach the right keyspace size
+                    i = 0
+                    while security(e_tmp, n - 3) >= keyspace:
+                        if e_tmp[i] > 0:
+                            e_tmp[i] -= 1
+                        i = (i + 1) % (n - 3)
 
-                            e_tmp = numpy.array(e_tmp + [0,0,0])
-                            # ---
-                            print("\nInitial integer vector of bounts (e_0, ..., e_%d)" % n)
-                            printl("e", e_tmp, n // k)
-                            RNC_prev, _, _, _, _ = strategy_block_cost(L[::-1], e_tmp)
+                    e_tmp = numpy.array(e_tmp + [0,0,0])
+                    # ---
+                    #print("\nInitial integer vector of bounts (e_0, ..., e_%d)" % n)
+                    #printl("e", e_tmp, n // k)
+                    RNC_prev, _, _, _, _ = strategy_block_cost(L[::-1], e_tmp)
+                    sec_prev = '%f' % (float(security(e_tmp, n)) + float(security([e_2, e_3], 2)))
+                    print(f'\nInitial security: {sec_prev},\tcost: {measure(RNC_prev) / (10.0**6)}')
+                    #print("// Number of field operations (GAE):\t%1.6f x M + %1.6f x S + %1.6f x a := %1.6f x M" % (RNC_prev[0] / (10.0**6), RNC_prev[1] / (10.0**6), RNC_prev[2] / (10.0**6), measure(RNC_prev) / (10.0**6)) )
+                    #print("\tSecurity ~ %f\n" % security(e_tmp, n))
+                    #print("_______________________________________________________________________________________________________________________________")
+                    #print("We proceed by searching a better integer vector of bounds\n")
+                    for i in range(1, int(ceil( (1.0*setting.exponent) / (1.0*r) ))):
+                        e_tmp, RNC_tmp = optimal_bounds(L[::-1], e_tmp, r, keyspace)
+                        if measure(RNC_tmp) == measure(RNC_prev):
+                            break
+                        else:
+                            RNC_prev = RNC_tmp
 
-                            print("// Number of field operations (GAE):\t%1.6f x M + %1.6f x S + %1.6f x a := %1.6f x M" % (RNC_prev[0] / (10.0**6), RNC_prev[1] / (10.0**6), RNC_prev[2] / (10.0**6), measure(RNC_prev) / (10.0**6)) )
-                            print("\tSecurity ~ %f\n" % security(e_tmp, n))
-                            print("_______________________________________________________________________________________________________________________________")
-                            print("We proceed by searching a better integer vector of bounds\n")
-                            for i in range(1, int(ceil( (1.0*setting.exponent) / (1.0*r) ))):
-                                e_tmp, RNC_tmp = optimal_bounds(L[::-1], e_tmp, r, keyspace)
-                                if measure(RNC_tmp) == measure(RNC_prev):
-                                    break
-                                else:
-                                    RNC_prev = RNC_tmp
+                    # Updating if the results were improved
+                    RNC_tmp = measure(RNC_tmp) + cost_rad(4,ceil(e_2/2.0)) + cost_rad(9,ceil(e_3/2.0))# + cost_rad(5, e_5) + cost_rad(7, e_7)
+                    if RNC_tmp >= RNC:
+                        continue
 
-                            # Updating if the results were improved
-                            RNC_tmp = measure(RNC_tmp) + cost_rad(2, e_2) + cost_rad(3, e_3) + cost_rad(5, e_5) + cost_rad(7, e_7)
-                            if RNC_tmp >= RNC:
-                                continue
+                    assert(RNC_tmp < RNC)
+                    RNC = RNC_tmp
+                    e = e_tmp
 
-                            assert(RNC_tmp < RNC)
-                            RNC = RNC_tmp
-                            e = e_tmp
-
-                            print(f'Cost including the radical isogeny part:\t{RNC}')
-                            print(f'Number of degree-2 isogeny constructions on the surface:\t{e_2}')
-                            print(f'Number of degree-3 radical isogeny constructions:\t\t{e_3}')
-                            print(f'Number of degree-5 radical isogeny constructions:\t\t{e_5}')
-                            print(f'Number of degree-7 radical isogeny constructions:\t\t{e_7}')
-                            # --------------------------------------------------------------------------------------------------
-                            f = open("./tmp/" + setting.algorithm + "_" + setting.prime  + "_" + setting.style + "_m" + str(setting.exponent) + raw + ".py", "w")
-                            f.write( 'm = [' + ', '.join([ str(ei) for ei in e[::-1] ]) + ']')
-                            if setting.algorithm == 'csurf':
-                                f.write( '\ne_2 = %d' % e_2)
-                                f.write( '\ne_3 = %d' % e_3)
-                                f.write( '\ne_5 = %d' % e_5)
-                                f.write( '\ne_7 = %d' % e_7)
-                            f.close()
-                            print("_______________________________________________________________________________________________________________________________\n")
+                    #print(f'Cost including the radical isogeny part:\t{RNC}')
+                    #print(f'Number of degree-2 isogeny constructions on the surface:\t{e_2}')
+                    #print(f'Number of degree-3 radical isogeny constructions:\t\t{e_3}')
+                    #print(f'Number of degree-5 radical isogeny constructions:\t\t{e_5}')
+                    #print(f'Number of degree-7 radical isogeny constructions:\t\t{e_7}')
+                    sec = '%f' % (float(security(e, n)) + float(security([e_2, e_3], 2)))
+                    print(f'New security: {sec},\tcost: {RNC / (10.0**6)},\te_2: {e_2},\te_3: {e_3},\te_5: {e_5},\te_7: {e_7}')
+                    # --------------------------------------------------------------------------------------------------
+                    f = open("./tmp/" + setting.algorithm + "_" + setting.prime  + "_" + setting.style + "_m" + str(setting.exponent) + raw + ".py", "w")
+                    f.write( 'm = [' + ', '.join([ str(ei) for ei in e[::-1] ]) + ']')
+                    if setting.algorithm == 'csurf':
+                        f.write( '\ne_2 = %d' % e_2)
+                        f.write( '\ne_3 = %d' % e_3)
+                        f.write( '\ne_5 = %d' % e_5)
+                        f.write( '\ne_7 = %d' % e_7)
+                    f.close()
+                    #print("_______________________________________________________________________________________________________________________________\n")
             else:
-                print(f'Cost assuming best CSIDH-configuration:\t{measure(RNC)}')
+                print(f'Cost assuming best CSIDH-configuration:\t{measure(RNC)/(10**6)}')
                 RNC = measure(RNC) * 1.25
-                print(f'Base cost (1.25 times the above cost):\t{RNC}')
+                print(f'Base cost (1.25 times the above cost):\t{RNC/(10**6)}')
                 exp = 256
                 assert(e_3 == 0)
                 assert(e_5 == 0)
@@ -284,14 +288,15 @@ def main():
 
                     e_tmp = numpy.array(e_tmp)
                     # ---
-                    print("\nInitial integer vector of bounts (e_0, ..., e_%d)" % n)
-                    printl("e", e_tmp, n // k)
+                    #print("\nInitial integer vector of bounts (e_0, ..., e_%d)" % n)
+                    #printl("e", e_tmp, n // k)
                     RNC_prev, _, _, _, _ = strategy_block_cost(L[::-1], e_tmp)
-
-                    print("// Number of field operations (GAE):\t%1.6f x M + %1.6f x S + %1.6f x a := %1.6f x M" % (RNC_prev[0] / (10.0**6), RNC_prev[1] / (10.0**6), RNC_prev[2] / (10.0**6), measure(RNC_prev) / (10.0**6)) )
-                    print("\tSecurity ~ %f\n" % security(e_tmp, n))
-                    print("_______________________________________________________________________________________________________________________________")
-                    print("We proceed by searching a better integer vector of bounds\n")
+                    sec_prev = '%f' % float(security(e_tmp, n))
+                    print(f'\nInitial security: {sec_prev},\tcost: {measure(RNC_prev) / (10.0**6)}')
+                    #print("// Number of field operations (GAE):\t%1.6f x M + %1.6f x S + %1.6f x a := %1.6f x M" % (RNC_prev[0] / (10.0**6), RNC_prev[1] / (10.0**6), RNC_prev[2] / (10.0**6), measure(RNC_prev) / (10.0**6)) )
+                    #print("\tSecurity ~ %f\n" % security(e_tmp, n))
+                    #print("_______________________________________________________________________________________________________________________________")
+                    #print("We proceed by searching a better integer vector of bounds\n")
                     for i in range(1, int(ceil( (1.0*setting.exponent) / (1.0*r) ))):
                         e_tmp, RNC_tmp = optimal_bounds(L[::-1], e_tmp, r, keyspace)
                         if measure(RNC_tmp) == measure(RNC_prev):
@@ -300,7 +305,7 @@ def main():
                             RNC_prev = RNC_tmp
 
                     # Updating if the results were improved
-                    RNC_tmp = measure(RNC_tmp) + cost_rad(2, e_2)
+                    RNC_tmp = measure(RNC_tmp) + cost_rad(4,ceil(e_2/2.0))
                     if RNC_tmp >= RNC:
                         continue
 
@@ -308,8 +313,10 @@ def main():
                     RNC = RNC_tmp
                     e = e_tmp
 
-                    print(f'Cost including the degree-2 isogeny part:\t{RNC}')
-                    print(f'Number of degree-2 isogeny constructions on the surface:\t{e_2}')
+                    #print(f'Cost including the degree-2 isogeny part:\t{RNC}')
+                    #print(f'Number of degree-2 isogeny constructions on the surface:\t{e_2}')
+                    sec = '%f' % float(security(e, n))
+                    print(f'New security: {sec},\tcost: {RNC / (10.0**6)},\te_2: {e_2}')
                     # --------------------------------------------------------------------------------------------------
                     f = open("./tmp/" + setting.algorithm + "_" + setting.prime  + "_" + setting.style + "_m" + str(setting.exponent) + raw + ".py", "w")
                     f.write( 'm = [' + ', '.join([ str(ei) for ei in e[::-1] ]) + ']')
@@ -319,7 +326,7 @@ def main():
                         f.write( '\ne_5 = %d' % e_5)
                         f.write( '\ne_7 = %d' % e_7)
                     f.close()
-                    print("_______________________________________________________________________________________________________________________________\n")
+                    #print("_______________________________________________________________________________________________________________________________\n")
 
 
 if __name__ == "__main__":
