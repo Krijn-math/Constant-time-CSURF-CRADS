@@ -95,7 +95,7 @@ try:
     # Reading the suitable bounds
     if setting.radicals and setting.algorithm == 'csurf':
         # The use of radical isogenies assumes we have precomputed an optimal bound for CSURF using only degree-2 isogenies
-        vectorbound = "csurf_" + setting.prime  + "_" + setting.style + "_m" + str(setting.exponent) + '_radicals'
+        vectorbound = "csurf_" + setting.prime  + "_" + setting.style + "_m" + str(setting.exponent)
     else:
         # CSURF without degree-2 isogenies takes as initial optiimal bounds the given ones by CSIDH
         vectorbound = "csidh_" + setting.prime  + "_" + setting.style + "_m" + str(setting.exponent)
@@ -209,26 +209,26 @@ def main():
                     # ---
                     #keyspace = KEYSPACE - float(security([e_2, e_3, e_5, e_7], 4))
                     keyspace = KEYSPACE - float(security([e_2, e_3], 2))
-                    e_tmp = list(e_init)[:(n - 3)]
-                    assert(len(e_tmp) == (n - 3))
+                    e_tmp = list(e_init)[:(n - 1)]
+                    assert(len(e_tmp) == (n - 1))
                     # Increasing to reach the right keyspace size
                     i = 0
-                    while security(e_tmp, n - 3) < keyspace:
+                    while security(e_tmp, n - 1) < keyspace:
                         e_tmp[i] += 1
-                        i = (i + 1) % (n - 3)
+                        i = (i + 1) % (n - 1)
                     # Decreasing to reach the right keyspace size
                     i = 0
-                    while security(e_tmp, n - 3) >= keyspace:
+                    while security(e_tmp, n - 1) >= keyspace:
                         if e_tmp[i] > 0:
                             e_tmp[i] -= 1
-                        i = (i + 1) % (n - 3)
+                        i = (i + 1) % (n - 1)
 
-                    e_tmp = numpy.array(e_tmp + [0,0,0])
+                    e_tmp = numpy.array(e_tmp + [0])
                     # ---
                     #print("\nInitial integer vector of bounts (e_0, ..., e_%d)" % n)
                     #printl("e", e_tmp, n // k)
                     RNC_prev, _, _, _, _ = strategy_block_cost(L[::-1], e_tmp)
-                    sec_prev = '%f' % (float(security(e_tmp, n)) + float(security([e_2, e_3], 2)))
+                    sec_prev = '%f' % (float(security(e_tmp, n-1)) + float(security([e_2, e_3], 2)))
                     print(f'\nInitial security: {sec_prev},\tcost: {measure(RNC_prev) / (10.0**6)}')
                     #print("// Number of field operations (GAE):\t%1.6f x M + %1.6f x S + %1.6f x a := %1.6f x M" % (RNC_prev[0] / (10.0**6), RNC_prev[1] / (10.0**6), RNC_prev[2] / (10.0**6), measure(RNC_prev) / (10.0**6)) )
                     #print("\tSecurity ~ %f\n" % security(e_tmp, n))
@@ -255,7 +255,7 @@ def main():
                     #print(f'Number of degree-3 radical isogeny constructions:\t\t{e_3}')
                     #print(f'Number of degree-5 radical isogeny constructions:\t\t{e_5}')
                     #print(f'Number of degree-7 radical isogeny constructions:\t\t{e_7}')
-                    sec = '%f' % (float(security(e, n)) + float(security([e_2, e_3], 2)))
+                    sec = '%f' % (float(security(e, n-1)) + float(security([e_2, e_3], 2)))
                     print(f'New security: {sec},\tcost: {RNC / (10.0**6)},\te_2: {e_2},\te_3: {e_3},\te_5: {e_5},\te_7: {e_7}')
                     # --------------------------------------------------------------------------------------------------
                     f = open("./tmp/" + setting.algorithm + "_" + setting.prime  + "_" + setting.style + "_m" + str(setting.exponent) + raw + ".py", "w")
@@ -291,7 +291,7 @@ def main():
                     #print("\nInitial integer vector of bounts (e_0, ..., e_%d)" % n)
                     #printl("e", e_tmp, n // k)
                     RNC_prev, _, _, _, _ = strategy_block_cost(L[::-1], e_tmp)
-                    sec_prev = '%f' % float(security(e_tmp, n))
+                    sec_prev = '%f' % (float(security(e_tmp, n)) + float(security([e_2], 1)))
                     print(f'\nInitial security: {sec_prev},\tcost: {measure(RNC_prev) / (10.0**6)}')
                     #print("// Number of field operations (GAE):\t%1.6f x M + %1.6f x S + %1.6f x a := %1.6f x M" % (RNC_prev[0] / (10.0**6), RNC_prev[1] / (10.0**6), RNC_prev[2] / (10.0**6), measure(RNC_prev) / (10.0**6)) )
                     #print("\tSecurity ~ %f\n" % security(e_tmp, n))
@@ -315,7 +315,7 @@ def main():
 
                     #print(f'Cost including the degree-2 isogeny part:\t{RNC}')
                     #print(f'Number of degree-2 isogeny constructions on the surface:\t{e_2}')
-                    sec = '%f' % float(security(e, n))
+                    sec = '%f' % (float(security(e, n)) + float(security([e_2], 1)))
                     print(f'New security: {sec},\tcost: {RNC / (10.0**6)},\te_2: {e_2}')
                     # --------------------------------------------------------------------------------------------------
                     f = open("./tmp/" + setting.algorithm + "_" + setting.prime  + "_" + setting.style + "_m" + str(setting.exponent) + raw + ".py", "w")
