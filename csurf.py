@@ -10,11 +10,10 @@ print("")
 
 assert(exponent_of_two >= 3)
 
-from src.radical.crad_general import Montgomery_min_to_Montgomery, Montgomery_to_Montgomery_min, sampling_ell_order_point
-from src.radical.crad_4 import act_with_two_on_Montgomery, act_with_four_on_Montgomery, e_2
+from src.radical.crad_4 import act_with_four_on_Montgomery, e_2
 from src.radical.crad_3 import e_3
-from src.radical.crad_5 import e_5
-from src.radical.crad_7 import e_7
+#from src.radical.crad_5 import e_5
+#from src.radical.crad_7 import e_7
 
 ''' -------------------------------------------------------------------------------------
     Number of degree-(l_i) isogeny constructions to be performed: m_i
@@ -76,7 +75,8 @@ print("// All the experiments are assuming S = %1.6f x M and a = %1.6f x M. The 
 
 data_crads = {'S':[]}
 if setting.algorithm == 'csurf' and setting.radicals:
-    m = [e_3] + [e_5] + [e_7] + m[3:]
+    #m = [e_3] + [e_5] + [e_7] + m[3:]
+    m = [e_3] + m[1:]
     for i in range(len(S_out)):
         # It doesn't matter the last small ell_i, it only add log2(n_i) scalar point multiplications
         TMP, _ = dynamic_programming_algorithm(L_out[i] + [3], len(L_out[i]) + 1)
@@ -96,10 +96,12 @@ def keygen():
     if setting.radicals:
         if (len(temporal_m) == 1) or ((len(temporal_m) == 2) and (0 in temporal_m)):
             # This branch is focused when m degree-ell isogeny constructions are required for each ell playing on the GAE
-            pub = GAE([2, 4], priv[1:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m, crads = {**data_crads, 'L':[7, 5, 3]})
+            #pub = GAE([2, 4], priv[1:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m, crads = {**data_crads, 'L':[7, 5, 3]})
+            pub = GAE([2, 4], priv[1:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m, crads = {**data_crads, 'L':[3]})
         else:
             # This branch is centered when m_i degree-(ell_i) isogeny constructions are required per each ell playing on the GAE
-            pub = GAE([2, 4], priv[1:], L_out, R_out, S_out, r_out, m, crads = {**data_crads, 'L':[7, 5, 3]})
+            #pub = GAE([2, 4], priv[1:], L_out, R_out, S_out, r_out, m, crads = {**data_crads, 'L':[7, 5, 3]})
+            pub = GAE([2, 4], priv[1:], L_out, R_out, S_out, r_out, m, crads = {**data_crads, 'L':[3]})
     else:
         if (len(temporal_m) == 1) or ((len(temporal_m) == 2) and (0 in temporal_m)):
             # This branch is focused when m degree-ell isogeny constructions are required for each ell playing on the GAE
@@ -137,10 +139,12 @@ def derive(priv, pub : int):
     if setting.radicals:
         if (len(temporal_m) == 1) or ((len(temporal_m) == 2) and (0 in temporal_m)):
             # This branch is focused when m degree-ell isogeny constructions are required for each ell playing on the GAE
-            ss = GAE(curve, priv[1:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m, crads = {**data_crads, 'L':[7, 5, 3]})
+            #ss = GAE(curve, priv[1:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m, crads = {**data_crads, 'L':[7, 5, 3]})
+            ss = GAE(curve, priv[1:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m, crads = {**data_crads, 'L':[3]})
         else:
             # This branch is centered when m_i degree-(ell_i) isogeny constructions are required per each ell playing on the GAE
-            ss = GAE(curve, priv[1:], L_out, R_out, S_out, r_out, m, crads = {**data_crads, 'L':[7, 5, 3]})
+            #ss = GAE(curve, priv[1:], L_out, R_out, S_out, r_out, m, crads = {**data_crads, 'L':[7, 5, 3]})
+            ss = GAE(curve, priv[1:], L_out, R_out, S_out, r_out, m, crads = {**data_crads, 'L':[3]})
     else:
         if (len(temporal_m) == 1) or ((len(temporal_m) == 2) and (0 in temporal_m)):
             # This branch is focused when m degree-ell isogeny constructions are required for each ell playing on the GAE

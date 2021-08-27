@@ -1,5 +1,5 @@
 ALGORITHM=csurf
-CRADS=
+CRADS=-r
 
 python3 main.py -p p512  -m unscaled -s wd2 -v -a $ALGORITHM -e 5 -u $CRADS
 python3 main.py -p p512  -m unscaled -s wd1 -v -a $ALGORITHM -e 10 -u $CRADS
