@@ -1,4 +1,4 @@
-ALGORITHM=csidh
+ALGORITHM=csurf
 CRADS=
 
 python3 main.py -p p512  -m unscaled -s wd2 -v -a $ALGORITHM -e 5 -u $CRADS

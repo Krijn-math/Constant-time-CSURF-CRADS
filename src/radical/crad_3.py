@@ -530,10 +530,10 @@ def act_with_nine_on_Montgomery(A, exp, Tp_proj = None):
     
     X, Z = A, A_inv
     
-    for i in range(0, abs(exp), 1):         #no -1 because no last velu
+    for i in range(0, abs(exp) // 2, 1):         #no -1 because no last velu
         X, Z = nine_iso_projective(X,Z)
 
-    for i in range(abs(exp), e_3 // 2, 1):        # Exponent bound of 3 is assumed to be e_3, thus c_3 // 2 degree-9 radical isogenies
+    for i in range(abs(exp) // 2, e_3 // 2, 1):        # Exponent bound of 3 is assumed to be e_3, thus c_3 // 2 degree-9 radical isogenies
         dummyX, dummyZ = nine_iso_projective(X,Z)
 
     A = pro_to_aff_nine(X, Z)

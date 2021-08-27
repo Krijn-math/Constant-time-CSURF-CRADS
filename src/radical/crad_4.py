@@ -194,13 +194,13 @@ def act_with_four_on_Montgomery(A, exp):
     _, A = Montgomery_min_to_Tate_four(A, r, t) #function returns M and N, need only N, M = 1 always holds
     
     X, Z = A, 1
-    for i in range(0, abs(exp) // 2, 1):         
+    for i in range(0, abs(exp) // 2, 1):
         X, Z = four_iso_projective(X, Z)
         #X = four_iso(X)
 
     # Dummy isogenies (an easy patch, which must be modified in order to avoid dummy-isogenies)
     B1, B2 = X, Z
-    for i in range(abs(exp), e_2 // 2, 1):        # Exponent bound of 2 is assumed to be e_2, thus c_2 // 2 degree-4 radical isogenies
+    for i in range(abs(exp) // 2, e_2 // 2, 1):        # Exponent bound of 2 is assumed to be e_2, thus c_2 // 2 degree-4 radical isogenies
         B1, B2  = four_iso_projective(B1, B2)
         #B = four_iso(X)
 
