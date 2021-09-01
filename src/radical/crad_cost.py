@@ -60,7 +60,7 @@ def cost_single_isogeny(ell):
     elif ell == 3:
         cost = cost_tri_root + C_S*0 + 2 + C_A*10
     elif ell == 4:
-        cost = cost_quart_root + C_S*5 + 3 + C_A*3
+        cost = cost_quart_root + C_S*4 + 6 + C_A*7
     elif ell == 5:
         cost = cost_quint_root + C_S*6 + 8 + C_A*8
     elif ell == 7:
@@ -70,12 +70,12 @@ def cost_single_isogeny(ell):
 
     return cost
 
-cost_mont_min = 1*cost_sq_root + 0*cost_tri_root + 1*cost_inv + C_S*1 + 1 + C_A*2
-cost_min_mont = 1*cost_sq_root + 0*cost_tri_root + 1*cost_inv + C_S*1 + 1 + C_A*2
+cost_mont_min = 1*cost_sq_root + 0*cost_tri_root + 0*cost_inv + C_S*2 + 2 + C_A*4
+cost_min_mont = 1*cost_sq_root + 0*cost_tri_root + 0*cost_inv + C_S*2 + C_A*4
 cost_mont_min_mont = cost_mont_min + cost_min_mont
 
-cost_min_tate4 = 0*cost_sq_root + 0*cost_tri_root + 1*cost_inv + C_S*1 + 7 + C_A*10
-cost_tate4_min = 2*cost_sq_root + 0*cost_tri_root + 2*cost_inv + C_S*1 + 3 + C_A*7
+cost_min_tate4 = 0*cost_sq_root + 0*cost_tri_root + 0*cost_inv + C_S*8 + 5 + C_A*7
+cost_tate4_min = 2*cost_sq_root + 0*cost_tri_root + 0*cost_inv + C_S*1 + 6 + C_A*11
 cost_min_tate4_min = cost_min_tate4 + cost_tate4_min
 
 cost_mont_tate = 1*cost_sq_root + 0*cost_tri_root + 1*cost_inv + C_S*1 + 9 + C_A*10
@@ -93,7 +93,7 @@ def cost_overhead(ell):
     elif ell == 3:
         cost_ops = 0*cost_sq_root + 0*cost_inv + C_S*0 + 2 + C_A*0
     elif ell == 4:
-        cost_ops = 3*cost_sq_root + 1*cost_inv + C_S*5 + 6 + C_A*7
+        cost_ops = 3*cost_sq_root + 0*cost_inv + C_S*3 + 5 + C_A*9
     elif ell == 5:
         cost_ops = 0*cost_sq_root + 1*cost_inv + C_S*4 + 5 + C_A*1
     elif ell == 7:
