@@ -51,6 +51,27 @@ def Montgomery_min_to_Montgomery(A):
     output = fp_mul(output,inv)   #(-2*A)/((A^2 + 4)^sq_exp)
     return output
 
+
+def Montgomery_min_to_Montgomery_pro(AX, AZ):  
+    ''' From the Radical isogenies code: 
+    This function transforms
+        FROM: a Montgomery^- coefficient A on the surface
+                    y^2 = x^3 + A*x^2 - x.
+        TO: a Montgomery coefficient A on the floor
+                    y^2 = x^3 + A*x^2 + x
+    obtained from the 2-isogeny with kernel <(0,0)>.
+'''
+    output = fp_add(-AX,-AX)     
+    AX2 = fp_sqr(AX)              
+    AZ2 = fp_sqr(AZ)
+    inv = fp_add(AZ2, AZ2)
+    inv = fp_add(inv, inv)
+    inv = fp_add(inv, AX2)         
+    inv = crad_sq(inv)      
+
+    return output, inv
+
+
 def Montgomery_to_Montgomery_min(A):
     '''
     From the Radical isogenies code:   
@@ -69,6 +90,31 @@ def Montgomery_to_Montgomery_min(A):
     inv = crad_inv(inv)             #1/((4 - A^2)^sq_exp)
     output = fp_mul(output,inv)   #(-2*A)/((4 - A^2)^sq_exp)
     return output
+
+
+def Montgomery_to_Montgomery_min_pro(AX, AZ):
+    '''
+    From the Radical isogenies code:   
+    This function transforms
+        FROM: a Montgomery coefficient A on the floor
+                    y^2 = x^3 + A*x^2 + x
+        TO: a Montgomery^- coefficient A on the surface
+                    y^2 = x^3 + A*x^2 - x.
+    obtained from the 2-isogeny with kernel <(0,0)>. 
+'''
+  
+    output = fp_add(-AX,-AX)
+    output = fp_mul(output, AZ)
+    
+    AX2 = fp_sqr(AX)               
+    AZ2 = fp_sqr(AZ)
+    inv = fp_add(AZ2, AZ2)
+    inv = fp_add(inv, inv)
+    inv = fp_sub(inv, AX2)
+    inv = fp_mul(inv, AZ2)
+    inv = crad_sq(inv)      
+    
+    return output, inv
 
 
 def Montgomery_to_Tate(A, xP):
@@ -152,6 +198,46 @@ def Montgomery_min_to_Tate_four(A, r, t):
 
     return M, N
 
+def Montgomery_min_to_Tate_four_pro(AX, AZ, rp, tp): 
+    '''
+    From Radical Isogenies:
+    This functions transforms
+        FROM: Montgomery^- coefficient A
+                y^2 = x^3 + A*x^2 - x
+        TO: the coefficients of a Tate normal form of X1(4)
+                y^2 + M*xy + N*y = x^3 + N*x^2
+    
+    In this case for X1(4), M = 1 will always hold.
+    Note that [r,t] is the Fp-rational 4-torsion point such that the isogeny with kernel
+    2*[r,t] maps [r,t] to a 2-torsion point that has Fp-rational halves as well.
+    
+    our function only returns N, in projective coordinates, to save costs
+    
+    notice r = rp/Z, t = tp/Z^2 
+'''
+    AZ2 = fp_sqr(AZ)
+    AZ4 = fp_sqr(AZ2)
+
+    tau = fp_add(tp, tp)
+    
+    sp = rp
+    sp = fp_add(sp, fp_add(sp, sp))
+    tmp = fp_add(sp, AX)
+    sp = fp_add(tmp, AX)
+    sp = fp_mul(rp, sp)
+    sp = fp_sub(sp, AZ2)                 #-Z^2 + rp(2X + 3rp)
+     
+    up = fp_mul(fp_sqr(tau), tmp)
+    up = fp_sub(up, fp_mul(AZ, fp_sqr(sp)))         #tau^2(X+3rp) - sp^2*Z
+      
+    NX = fp_mul(up, fp_sqr(up))         
+    NX = fp_mul(NX, AZ)                    #up^3*Z^4
+    
+    tau4 = fp_sqr(fp_sqr(tau))
+    NZ = fp_sqr(tau4)                     #tau^8
+
+    return NX, NZ
+
 def Tate_four_to_Montgomery_min(A):
     '''
     From Radical Isogenies:
@@ -181,6 +267,46 @@ def Tate_four_to_Montgomery_min(A):
     output = fp_mul(output, out_inv)        #(-B + 3*eps)/(#(eps*(B-eps)*2)^sq_exp)
     
     return output
+
+def Tate_four_to_Montgomery_min_pro(AX, AZ):
+    '''
+    From Radical Isogenies:
+    This function transforms
+        FROM: coefficient A representing a Tate normal form 
+                    y^2 + x*y + A*y = x^3 + A*x^2 
+        TO: Montgomery^- coefficient A
+                y^2 = x^3 + A*x^2 - x
+    B is a Montgomery coefficient on the surface where we simply translated 2*(0,0) = (-A,0) to (0,0).
+    The rest is a classical rescaling to obtain a Montgomery^- coefficient (just as in CSURF).
+'''
+    
+    _2AX = fp_add(AX, AX)
+    _4AX = fp_add(_2AX, _2AX)
+    _4AX2 = fp_sqr(_4AX)
+    _4AX3 = fp_mul(_4AX, _4AX2)
+    _4AX6 = fp_sqr(_4AX3)
+    _8AX = fp_add(_4AX, _4AX)
+
+    Bp = fp_sub(AZ, _8AX)                   #Z - 8X
+    
+    eps = fp_add(Bp, _8AX)
+    tmp = fp_sub(Bp, _8AX)
+    eps = fp_mul(eps, tmp)
+    fix = fp_sqr(_4AX)
+    eps = fp_mul(eps, fix)
+    eps = crad_sq(eps)               #((Bp + 8*X)(Bp - 8*X)*(4X)^2)^sq_exp
+
+    _3eps = fp_add(eps, fp_add(eps, eps))
+    ttmp = fp_mul(Bp, _4AX)
+    output = fp_sub(_3eps, ttmp)            #-Bp*(4x) + 3*eps
+
+    inv = fp_mul(Bp, _4AX)
+    inv = fp_sub(inv, eps)
+    inv = fp_mul(eps, inv)
+    inv = fp_add(inv, inv)
+    inv = crad_sq(inv)               #(2*eps*(BP(4X) - eps))^sq_exp
+    
+    return output, inv
 
 def Weier_to_Montgomery(coeffs):
     '''
@@ -267,9 +393,249 @@ def Weier_to_Montgomery(coeffs):
     output = fp_sub(a2, output_2)
     output = fp_add(output, output_3)
     output = fp_sub(output, output_4)
-    output = fp_mul(output, fp_inv(u2))         #(a2-s*a1+3*r-s^2)/u2
+    output = fp_mul(output, crad_inv(u2))         #(a2-s*a1+3*r-s^2)/u2
 
     return output
+
+def Montgomery_to_Tate_nine_pro(A, xP, zP): 
+    '''
+    This is a projective version of the original Montgomery to Tate function
+    specifically adapted to provide the right projective coordinates for the
+    degree-nine projective radical isogeny. This assumes the point is given
+    in projective coordinates.
+'''
+
+    rX = xP
+    rZ = zP
+    rZ2 = fp_sqr(rZ)
+    rZ3 = fp_mul(rZ2, rZ)
+    
+    tmp = fp_mul(rZ,A)                  #rZ*A
+    tmp = fp_add(tmp, rX)               #rZ*A + rX
+    
+    t0 = fp_mul(rX, tmp)                #rX*(rZ*A + rX)
+    t0 = fp_add(t0, rZ2)
+    t0 = fp_mul(rX, t0)
+    t0 = fp_mul(rZ3, t0)                #rZ3*rX*(rZ2 + rX(rZA + rX))
+    t0 = crad_sq(t0)
+   
+    twot = fp_add(t0,t0)                 #2*t0
+    twot2 = fp_sqr(twot)                 #(2*t0)^2
+    twot4 = fp_sqr(twot2)                #(2*t0)^4
+    twot8 = fp_sqr(twot4)                #(2*t0)^8
+
+    s0 = fp_add(tmp, tmp)               #2*rZ*A + 2*rX
+    s0 = fp_add(s0, rX)
+    s0 = fp_mul(rX, s0)
+    s0 = fp_add(rZ2, s0)                #s0 = rZ^2 + 2*A*rX*rZ + 3*rX^2
+
+    u0 = fp_add(rX, rX)
+    u0 = fp_add(tmp, u0)
+    u0 = fp_mul(twot2, u0)
+    tmp2 = fp_sqr(s0)
+    tmp2 = fp_mul(rZ3, tmp2)
+    u0 = fp_sub(u0, tmp2)               #rZ*(2t0)^2*A + 3*(2t0)^2*rX - rZ^3*S0^2
+
+    u3 = fp_sqr(u0)
+    u3 = fp_mul(u3, u0)
+    
+    Mt = fp_mul(s0, u0)
+    Mt = fp_add(Mt, Mt)                 #2*s0*u0
+    
+    tmp3 = fp_mul(rZ3, Mt)              #rZ3*Mt
+    M = fp_sub(tmp3, twot4)
+    M = fp_sqr(M)                       #(rZ^4*Mt - (2t0)^4)^2
+    
+    N = fp_mul(tmp3, twot4)
+    N1 = fp_mul(rZ3, u3)
+    N = fp_sub(N, N1)
+    N = fp_sub(N, twot8)                #rZ^3 * (2t0)^4 * Mt - rZ^3*u0^3 - (2t0)^8
+    
+    return M, N
+
+
+
+def Montgomery_to_Tate_nine_pro_with_affine_point(A, xP):
+    '''
+    This is a projective version of the original Montgomery to Tate function
+    specifically adapted to provide the right projective coordinates for the
+    degree-nine projective radical isogeny. This assumes the point is given
+    in affine coordinates.
+'''
+
+    r = xP
+    tmp = fp_add(A,r)                   #A+r
+    t = fp_mul(r,tmp)                   #r*(A+r)
+    t = fp_add(1, t)                    #(1 + r*(A+r))
+    t = fp_mul(r,t)                     #r * (1 + r*(A+r))
+    t = crad_sq(t)                      #(r*(1+r*(A+r)))^sq_exp
+    
+    twot = fp_add(t,t)                  #2*t
+    twot2 = fp_sqr(twot)                #(2*t)^2
+    twot4 = fp_sqr(twot2)                #(2*t)^4
+    twot8 = fp_sqr(twot4)                #(2*t)^8
+
+    s = fp_add(tmp, tmp)                #2*A + 2*r
+    s = fp_add(s, r)                    #2*A + 3*r
+    s = fp_mul(r,s)                     #r*(2*A + 3*r)
+    s = fp_add(1,s)                     #1 + r*(2*A + 3*r)
+    
+    u = fp_add(r,r)                     #2*r
+    u = fp_add(tmp, u)                  #A + 3*r
+    u = fp_mul(u, twot2)                #(2t)^2(A + 3*r)
+    s_sq = fp_sqr(s)                    #s^2
+    u = fp_sub(u, s_sq)                 #(2t)^2*A + (2t)^2*3*r - s^2
+    
+    u3 = fp_sqr(u)
+    u3 = fp_mul(u3, u)
+    
+    Mt = fp_mul(s, u)
+    Mt = fp_add(Mt, Mt)                 #2*s*u
+    
+    M = fp_sub(Mt, twot4)
+    M = fp_sqr(M)                       #(Mt - (2t)^4)^2
+    
+    N = fp_mul(twot4, Mt)
+    N = fp_sub(N, u3)
+    N = fp_sub(N, twot8)                #(2t)^4 - u^3 - (2t)^8
+    
+    return M, N
+
+def Weier_to_Montgomery_pro(coeffs):
+    '''
+   This is a projective version of the Weier to Montgomery function, but
+   assumes for simplicity that coeffs 3 and 4 are 0.
+   '''
+    a1p = coeffs[0]
+    a2p = coeffs[1]
+    a3p = coeffs[2]
+    a4p = coeffs[3]
+    a6p = coeffs[4]
+    X = coeffs[5]
+    Z = coeffs[6]
+    Z2 = fp_sqr(Z)
+    Z4 = fp_sqr(Z2)
+    Z6 = fp_mul(Z4, Z2)
+    Z8 = fp_sqr(Z4)
+
+    sp = fp_sub(0,a1p)               #-a1p
+
+    Bp = fp_sqr(a1p)
+    Bp = fp_add(Bp, fp_mul(a2p, Z))
+    Bp = fp_add(Bp, fp_mul(a2p, Z))
+    Bp = fp_add(Bp, fp_mul(a2p, Z))
+    Bp = fp_add(Bp, fp_mul(a2p, Z))     #a1p^2 + 4*a2p*Z
+
+    Cp = fp_mul(a1p, a3p)               #a1p*a3p
+
+    Dp = fp_sqr(a3p)                      #a3p^2
+    
+    d_tmp = fp_mul(Cp, Z4)
+    d_tmp = fp_add(d_tmp, d_tmp)                    #2*Cp*Z^4             
+    d_tmp = fp_add(d_tmp, d_tmp)                    #4*Cp*Z^4  
+    d_tmp = fp_add(d_tmp, d_tmp)                    #8*Cp*Z^4
+    d_tmp = fp_add(d_tmp, fp_add(d_tmp, d_tmp))     #24*Cp*Z^4
+
+    Bp2 = fp_sqr(Bp)
+    d0p = fp_sub(Bp2, d_tmp)                        #d0p = Bp^2 - 24*Cp*Z^4 
+
+    d_tmp = fp_add(d_tmp, fp_add(d_tmp, d_tmp))     #72*Cp*Z^4  
+    
+    d2_tmp = fp_mul(Z8, Dp)
+    d2_tmp = fp_add(d2_tmp, d2_tmp)                    #2*Dp*Z^8             
+    d2_tmp = fp_add(d2_tmp, d2_tmp)                    #4*Dp*Z^8  
+    d2_tmp = fp_add(d2_tmp, d2_tmp)                    #8*Dp*Z^8  
+    d2_tmp = fp_add(d2_tmp, fp_add(d2_tmp, d2_tmp))     #24*Dp*Z^8   
+    d2_tmp = fp_add(d2_tmp, fp_add(d2_tmp, d2_tmp))     #72*Dp*Z^8
+    d2_tmp = fp_add(d2_tmp, fp_add(d2_tmp, d2_tmp))     #72*Dp*Z^8
+    d2_tmp = fp_add(d2_tmp, d2_tmp)                     #4^2*3^3*Z^8*Dp
+
+    d1p = fp_add(Bp2, Bp2)
+    d1p = fp_sub(d1p, d_tmp)
+    d1p = fp_mul(Bp, d1p)
+    d1p = fp_add(d1p, d2_tmp)                           #d1p = Bp(2*Bp^2 - 72*Z^4*Cp) + 4^2*3^3*Z^8*Dp
+
+    d0p3 = fp_sqr(d0p)
+    d0p3 = fp_mul(d0p, d0p3)
+    rootp = fp_sqr(d1p)
+    rootp = fp_sub(rootp, d0p3)
+    rootp = fp_sub(rootp, d0p3)
+    rootp = fp_sub(rootp, d0p3)
+    rootp = fp_sub(rootp, d0p3)
+    rootp = crad_sq(rootp)                   #(d1p^2-4*d0p^3)^sq_exp
+
+    cbp = fp_add(d1p, rootp)
+    cbp = fp_mul(cbp, inv_2)
+    cbp = crad_tri(cbp)                   #((d1p+rootp)/2)^tri_exp;
+
+    rp = fp_add(Bp, cbp)
+    rp = fp_mul(-cbp, rp)
+    rp = fp_sub(rp, d0p)                        #rp = -cbp(Bp + cbp) - d0p
+    
+    rb = fp_mul(Z6, cbp)
+    rb = fp_add(rb, rb)
+    rb = fp_add(rb, rb)
+    rb = fp_add(rb, fp_add(rb,rb))          #3*4*Z^6*cbp
+    
+    t_tmp = fp_mul(cbp, a3p)             
+    t_tmp = fp_mul(t_tmp, Z4)
+    t_tmp = fp_add(t_tmp, t_tmp)
+    t_tmp = fp_add(t_tmp, t_tmp)
+    t_tmp = fp_add(t_tmp, fp_add(t_tmp, t_tmp))     #3*4*Z^4*cbp*a3p
+    
+    tp = fp_mul(rp, a1p)
+    tp = fp_add(t_tmp, tp)
+    tp = fp_sub(0, tp)                              # -(3*4*cbp*Z^4*a3p + rp*a1p)
+     
+    _2cbp = fp_add(cbp, cbp)
+    _3cbp = fp_add(cbp, _2cbp)
+    _6cbp = fp_add(_3cbp, _3cbp)
+    _12cbp = fp_add(_6cbp, _6cbp)
+    _24cbp = fp_add(_12cbp, _12cbp)
+    _72cbp = fp_add(_24cbp, fp_add(_24cbp, _24cbp))
+       
+    AZ1 = fp_mul(_72cbp, cbp)
+    AZ1 = fp_mul(AZ1, Z4)
+    AZ1 = fp_mul(AZ1, sp)
+    AZ1 = fp_mul(AZ1, a3p)                  #72*Z^4*cbp^2*sp*a3p
+    
+    AZ2 = fp_mul(Z, _24cbp)
+    AZ2 = fp_mul(AZ2, rp)
+    AZ2 = fp_mul(AZ2, a2p)                  #3*8*Z*cbp*(rp*a2p)
+
+    AZ3 = fp_mul(rp, sp)
+    AZ3 = fp_add(tp, AZ3)
+    AZ3 = fp_mul(AZ3, a1p)
+    AZ3 = fp_mul(AZ3, _6cbp)                #(tp + rp*sp)a1p*(3*2*cbp)
+
+    
+    AZ4 = fp_sqr(rp)
+    AZ4 = fp_add(AZ4, fp_add(AZ4, AZ4))     #3*rp2
+    
+    AZ5 = fp_mul(_6cbp, fp_mul(sp, tp))     #6*cbp*sp*tp
+
+    AZ = fp_sub(AZ2, AZ1)
+    AZ = fp_sub(AZ, AZ3)
+    AZ = fp_add(AZ, AZ4)
+    AZ = fp_sub(AZ, AZ5)
+    AZ = fp_sqr(crad_quart(fp_mul(AZ, fp_sqr(rb))))      #in order to get correct root
+    
+    AX_tmp = fp_add(a1p, a1p)
+    AX_tmp = fp_add(AX_tmp, sp)
+    AX_tmp = fp_mul(sp, AX_tmp)
+
+    AX = fp_mul(Z, a2p)
+    AX = fp_add(AX, AX)
+    AX = fp_add(AX, AX)
+    AX = fp_sub(AX, AX_tmp)
+    AX = fp_mul(cbp, AX)
+    AX = fp_add(rp, AX)
+    AX2 = fp_add(AX, AX)
+    AX = fp_add(AX2, AX)
+    AX = fp_mul(AX, rb)                                 #in order to get correct root
+    
+    return AX, AZ
+
 
 # Next function correspond with the affine version of elligator
 def sampling_ell_order_point(A, ell):

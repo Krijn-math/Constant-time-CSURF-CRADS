@@ -10,7 +10,7 @@ print("")
 
 assert(exponent_of_two >= 3)
 
-from src.radical.crad_4 import act_with_four_on_Montgomery, e_2
+from src.radical.crad_4 import act_with_four_on_Montgomery, act_with_four_on_Montgomery_pro, e_2
 from src.radical.crad_3 import e_3
 #from src.radical.crad_5 import e_5
 #from src.radical.crad_7 import e_7
@@ -110,7 +110,12 @@ def keygen():
             # This branch is centered when m_i degree-(ell_i) isogeny constructions are required per each ell playing on the GAE
             pub = GAE([2, 4], priv[1:], L_out, R_out, S_out, r_out, m)
     
-    pub = coeff(pub)
+    #rewrite to proj_coeffs used in rad isogenies
+    X = fp_add(pub[0], pub[0])
+    Z = pub[1]
+    X = fp_sub(X, Z)
+    X = fp_add(X, X)
+    
     cost_velu = get_ops()
 
     set_zero_ops()
@@ -118,7 +123,7 @@ def keygen():
     #pub = act_with_two_on_Montgomery(pub, priv[0])
     
     # Degree-4 radical isogeny chain on the floor --> surface --> floor
-    pub = act_with_four_on_Montgomery(pub, priv[0])
+    pub = act_with_four_on_Montgomery_pro(X, Z, priv[0])
 
     cost_rad = get_ops()
     cost = [x + y for x, y in zip(cost_velu, cost_rad)]
@@ -153,7 +158,12 @@ def derive(priv, pub : int):
             # This branch is centered when m_i degree-(ell_i) isogeny constructions are required per each ell playing on the GAE
             ss = GAE(curve, priv[1:], L_out, R_out, S_out, r_out, m)        
 
-    ss = coeff(ss)
+    #rewrite to proj_coeffs used in rad isogenies
+    X = fp_add(ss[0], ss[0])
+    Z = ss[1]
+    X = fp_sub(X, Z)
+    X = fp_add(X, X)
+
     cost_velu = get_ops()
 
     set_zero_ops()
@@ -161,7 +171,7 @@ def derive(priv, pub : int):
     #ss = act_with_two_on_Montgomery(ss, priv[0])
 
     # Degree-4 radical isogeny chain on the floor --> surface --> floor
-    ss = act_with_four_on_Montgomery(ss, priv[0])
+    ss = act_with_four_on_Montgomery_pro(X, Z, priv[0])
 
     cost_rad = get_ops()    
     cost = [x + y for x, y in zip(cost_velu, cost_rad)]
