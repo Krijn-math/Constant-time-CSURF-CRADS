@@ -397,7 +397,7 @@ def Weier_to_Montgomery(coeffs):
 
     return output
 
-def Montgomery_to_Tate_nine_pro(A, xP, zP): 
+def Montgomery_to_Tate_nine_pro2(A, xP, zP): 
     '''
     This is a projective version of the original Montgomery to Tate function
     specifically adapted to provide the right projective coordinates for the
@@ -453,7 +453,78 @@ def Montgomery_to_Tate_nine_pro(A, xP, zP):
     
     return M, N
 
+def Montgomery_to_Tate_nine_pro(X, Z, xP, zP): 
+    '''
+    This is a projective version of the original Montgomery to Tate function
+    specifically adapted to provide the right projective coordinates for the
+    degree-nine projective radical isogeny. This assumes the point is given
+    in projective coordinates.
+'''
 
+    rX = xP
+    rZ = zP
+    rX2 = fp_sqr(rX)
+    rZ2 = fp_sqr(rZ)
+    rZ3 = fp_mul(rZ2, rZ)
+    
+    Z2 = fp_sqr(Z)
+    Z3 = fp_mul(Z2, Z)
+    
+    rXZ = fp_mul(rX, Z)
+    
+    tmp = fp_mul(rZ, X)
+    tmp = fp_add(tmp, rXZ)              #rZ*A + rX
+    
+    tp = fp_mul(rXZ, tmp)                #rX*(rZ*A + rX)
+    tp = fp_add(tp, fp_mul(Z2,rZ2))
+    tp = fp_mul(rX, tp)
+    tp = fp_mul(rZ3, tp)                #rZ3*rX*(rZ2 + rX(rZA + rX))
+    tp = fp_mul(tp, Z2)
+    tp = fp_exp(tp, sq_exp)
+   
+    twot = fp_add(tp,tp)                 #2*t0
+    twot2 = fp_sqr(twot)                 #(2*t0)^2
+    twot4 = fp_sqr(twot2)                #(2*t0)^4
+    twot8 = fp_sqr(twot4)                #(2*t0)^8
+
+    s1 = fp_mul(rZ2, Z)
+    s2 = fp_mul(rX, rZ)
+    s2 = fp_mul(X, s2)
+    s2 = fp_add(s2, s2)
+    s3 = fp_mul(rX2, Z)
+    s3 = fp_add(s3, fp_add(s3, s3))
+    sp = fp_add(s1, fp_add(s2, s3))
+
+    u1 = fp_mul(rZ, X)
+    u1 = fp_mul(u1, twot2)
+    u2 = fp_mul(twot2, rXZ)
+    u2 = fp_add(u2, fp_add(u2, u2))
+    u3 = fp_sqr(sp)
+    u3 = fp_mul(u3, rZ3)
+    u3 = fp_mul(u3, Z3)
+    up = fp_add(u1, u2)
+    up = fp_sub(up, u3)
+
+    u3 = fp_sqr(up)
+    u3 = fp_mul(u3, up)
+    
+    Mtp = fp_mul(sp, up)
+    Mtp = fp_add(Mtp, Mtp)                 #2*s0*u0
+
+    Mp = fp_mul(rZ3, Mtp)              #rZ3*Mt
+    Mp = fp_mul(Mp, Z2)
+    Mp = fp_sub(Mp, twot4)
+    Mp = fp_sqr(Mp)                       #(rZ^4*Mt - (2t0)^4)^2
+
+    N1 = fp_mul(rZ3, Mtp)
+    N1 = fp_mul(N1, twot4)
+    N1 = fp_mul(N1, Z2)
+    N2 = fp_mul(rZ3, u3)
+    N2 = fp_mul(N2, Z)
+    Np = fp_sub(N1, N2)
+    Np = fp_sub(Np, twot8)
+   
+    return Mp, Np
 
 def Montgomery_to_Tate_nine_pro_with_affine_point(A, xP):
     '''
