@@ -1,6 +1,6 @@
 from framework import *
 from src.hvelu import *
-from src.radical.crad_3 import act_with_nine_on_Montgomery, act_with_three_on_Montgomery
+from src.radical.crad_3 import act_with_nine_on_Montgomery_pro, act_with_three_on_Montgomery
 from src.radical.crad_5 import act_with_five_on_Montgomery
 from src.radical.crad_7 import act_with_seven_on_Montgomery
 
@@ -238,22 +238,26 @@ def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
 
                 if not isinfinity(kernel):
                     # Radical isogeny part
-                    A_i = coeff(E_i)
+                    #A_i = coeff(E_i)
+                    X = fp_add(E_i[0], E_i[0])
+                    Z = E_i[1]
+                    X = fp_sub(X, Z)
+                    X = fp_add(X, X)
                     #print(f'Affine coeff:\t{hex(A_i)};\t\texp:\t{e[pos]};\t\tell:\t{crads_prime[0]}')
 
                     if crads_prime[0] == 3:
                         #A_i = act_with_three_on_Montgomery(A_i, e[pos], Tp_proj = kernel)
-                        A_i = act_with_nine_on_Montgomery(A_i, e[pos], Tp_proj = ramifications[0])
-                    elif crads_prime[0] == 5:
-                        A_i = act_with_five_on_Montgomery(A_i, e[pos], Tp_proj = kernel)
-                    elif crads_prime[0] == 7:
-                        A_i = act_with_seven_on_Montgomery(A_i, e[pos], Tp_proj = kernel)
+                        X,Z = act_with_nine_on_Montgomery_pro(X, Z, e[pos], Tp_proj = ramifications[0])
+                    # elif crads_prime[0] == 5:
+                    #     A_i = act_with_five_on_Montgomery(A_i, e[pos], Tp_proj = kernel)
+                    # elif crads_prime[0] == 7:
+                    #     A_i = act_with_seven_on_Montgomery(A_i, e[pos], Tp_proj = kernel)
                     else:
                         print("not implemented")
 
                     v[pos] = 0
                     u[pos] = 0
-                    E_i = [ fp_add(A_i, 2), 4 ]
+                    E_i = [ fp_add(X, fp_add(Z,Z)), fp_add(fp_add(Z, Z), fp_add(Z, Z)) ]
 
     return E_i, v, u
 

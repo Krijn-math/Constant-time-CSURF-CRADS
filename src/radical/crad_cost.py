@@ -39,7 +39,6 @@ cost_quint_root = cost_exponentiation(quint_exp)
 cost_sept_root = cost_exponentiation(sept_exp)
 cost_novem_root = cost_exponentiation(novem_exp)
 
-
 def cost_rad(ell, exp):
     isogeny_cost = exp*cost_single_isogeny(ell)
     overhead = cost_overhead(ell)

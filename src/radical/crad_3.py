@@ -498,6 +498,154 @@ def act_with_nine_on_Montgomery(A, exp, Tp_proj = None):
     '''
     Adapted from the Radical isogenies code.
     Applies exp number of 9 isogenies to the Montgomery curve E_A on the floor.
+    This function takes A as the Montgomery coefficient, projectively maps this
+    to Tate normal coefficients using a point given in projective coordinates
+    applies nine isogenies (projective) and maps it back the the curve on the floor
+    with the Mont coeff given in affine coordinates.
+    '''
+    
+    A = (A * sign(exp)) % p         #
+    if Tp_proj == None:
+        Tp_proj, _ = sampling_ell_order_point(A, 0)
+        while isinfinity(xMUL(Tp_proj, [fp_add(A, 2), 4], 0)):
+            Tp_proj, _ = sampling_ell_order_point(A, 0)
+
+        sign_exp = 1
+    else:
+        sign_exp = sign(exp)
+    
+    Tp_proj[0] = (Tp_proj[0] * sign_exp) % p
+    
+    #here, we use a specifically adapted version of Montgomery to Tate that
+    #provides the right projective coordinates for the nine isogeny, which
+    #saves the inversions used.
+    X, Z = Montgomery_to_Tate_nine_pro(A, Tp_proj[0], Tp_proj[1]) 
+    
+    for i in range(0, abs(exp), 1):         #no -1 because no last velu
+        X, Z = nine_iso_projective(X,Z)
+
+    for i in range(abs(exp), e_3 // 2, 1):        # Exponent bound of 3 is assumed to be e_3, thus c_3 // 2 degree-9 radical isogenies
+        dummyX, dummyZ = nine_iso_projective(X,Z)
+
+    A = pro_to_aff_nine(X, Z)                   #TODO: we do not need to turn affine here, if we adjust Weier to Montg.
+
+    A2 = fp_sqr(A)
+    A3 = fp_mul(A2,A)
+    A4 = fp_sqr(A2)
+    A5 = fp_mul(A4,A)
+
+    a1 = fp_sub(A2, A3)
+    a1 = fp_add(a1, 1)                     #-A3 + A2 + 1
+    
+    a2 = fp_sub(A4, A3)
+    a2 = fp_add(a2, a2)
+    a2 = fp_sub(a2, A5)
+    a2 = fp_add(a2, A2)                    #-A5 + 2*A4 - 2*A3 + A2
+       
+    a3 = a2
+
+    a4 = 0                                  #we apply no last Velu
+    
+    a6 = 0                                  #we apply no last Velu
+    
+
+    output = Weier_to_Montgomery([a1,a2,a3,a4,a6])
+    output = (output * sign(exp)) % p
+
+    return output
+
+def act_with_nine_on_Montgomery_pro(X, Z, exp, Tp_proj = None):
+    '''
+    Adapted from the Radical isogenies code.
+    Applies exp number of 9 isogenies to the Montgomery curve E_A on the floor.
+    The sign of exp indicates the direction of the isogenies.
+    This function takes A as the Montgomery coefficient, projectively maps this
+    to Tate normal coefficients using a point given in projective coordinates
+    applies nine isogenies (projective) and maps it back the the curve on the floor
+    with the Mont coeff given in projective coordinates.
+    '''
+    
+    X = (X * sign(exp)) % p         #
+    if Tp_proj == None:
+        Tp_proj, _ = sampling_ell_order_point(A, 0)
+        while isinfinity(xMUL(Tp_proj, [fp_add(A, 2), 4], 0)):
+            Tp_proj, _ = sampling_ell_order_point(A, 0)
+
+        sign_exp = 1
+    else:
+        sign_exp = sign(exp)
+    
+    Tp_proj[0] = (Tp_proj[0] * sign_exp) % p
+    
+    #here, we use a specifically adapted version of Montgomery to Tate that
+    #provides the right projective coordinates for the nine isogeny, which
+    #saves the inversions used.
+    X, Z = Montgomery_to_Tate_nine_pro(X, Z, Tp_proj[0], Tp_proj[1]) 
+    
+    for i in range(0, abs(exp), 1):         #no -1 because no last velu
+        X, Z = nine_iso_projective(X,Z)
+
+    for i in range(abs(exp), e_3 // 2, 1):        # Exponent bound of 3 is assumed to be e_3, thus c_3 // 2 degree-9 radical isogenies
+        dummyX, dummyZ = nine_iso_projective(X,Z)
+
+    AX = X
+    AZ = Z
+    AX2 = fp_sqr(AX)
+    AX3 = fp_mul(AX, AX2)
+    AX4 = fp_sqr(AX2)
+    AX5 = fp_mul(AX, AX4)
+    
+    AZ2 = fp_sqr(AZ)
+    AZ3 = fp_mul(AZ, AZ2)
+    AZ4 = fp_sqr(AZ2)
+    
+    a1p = fp_add(AZ2, AX2)
+    a1p = fp_mul(Z, a1p)
+    a1p = fp_sub(a1p, AX3)                          #-X^3 + X^2Z + Z^3
+    
+
+    
+    AX4Z = fp_mul(AX4, AZ)
+    AX3Z2 = fp_mul(AX3, AZ2)
+    AX2Z3 = fp_mul(AX2, AZ3)
+    
+    a2p = fp_sub(AX2Z3, AX5)
+    a2p = fp_add(a2p, fp_sub(AX4Z, AX3Z2))
+    a2p = fp_add(a2p, fp_sub(AX4Z, AX3Z2))          #-X^5 + 2*X^4Z - 2*X^3Z^2 + X^2Z^3
+  
+    a3p = a2p
+
+    # A = pro_to_aff_nine(X, Z)                   #TODO: we do not need to turn affine here, if we adjust Weier to Montg.
+
+    # A2 = fp_sqr(A)
+    # A3 = fp_mul(A2,A)
+    # A4 = fp_sqr(A2)
+    # A5 = fp_mul(A4,A)
+
+    # a1 = fp_sub(A2, A3)
+    # a1 = fp_add(a1, 1)                     #-A3 + A2 + 1
+
+    # a2 = fp_sub(A4, A3)
+    # a2 = fp_add(a2, a2)
+    # a2 = fp_sub(a2, A5)
+    # a2 = fp_add(a2, A2)                    #-A5 + 2*A4 - 2*A3 + A2
+    
+    # a3 = a2
+
+    # a4 = 0                                  #we apply no last Velu
+    
+    # a6 = 0                                  #we apply no last Velu
+    
+
+    X, Z = Weier_to_Montgomery_pro([a1p,a2p,a3p,0,0, AX, AZ])
+    X = (X * sign(exp)) % p
+
+    return X, Z
+
+def act_with_nine_on_Montgomery_old(A, exp, Tp_proj = None):
+    '''
+    Adapted from the Radical isogenies code.
+    Applies exp number of 9 isogenies to the Montgomery curve E_A on the floor.
     The sign of exp indicates the direction of the isogenies.
     Due to the limitations of constant-time implementations, we obtain no speed-up
     with 9-isogenies, so this function is not used. 
