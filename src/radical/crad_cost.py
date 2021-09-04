@@ -83,7 +83,7 @@ cost_tate_mont = 2*cost_sq_root + 1*cost_tri_root + 1*cost_inv + C_S*7 + 23 + C_
 cost_mont_tate_mont = cost_mont_tate + cost_tate_mont
 
 cost_mont_tate_nine_pro = 1*cost_sq_root + 0*cost_tri_root + 0*cost_inv + C_S*7 + 13 + C_A*13
-cost_weier_nine_pro = 2*cost_sq_root + 1*cost_tri_root + 1*cost_inv + C_S*11 + 33 + C_A*65 ##includes inversion to affine point
+cost_weier_nine_pro = 2*cost_sq_root + 1*cost_tri_root + 0*cost_inv + C_S*11 + 33 + C_A*65 ##removed inversion to affine point
 
 #all of these costs have been calculated from the other crad_#.py files
 def cost_overhead(ell):
