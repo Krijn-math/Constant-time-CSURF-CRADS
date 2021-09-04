@@ -1,24 +1,24 @@
-ALGORITHM=csurf
-CRADS=-r
+ALGORITHM=csidh
+CRADS=
 
-python3 main.py -p p512  -m unscaled -s wd2 -v -a $ALGORITHM -e 5 -u $CRADS
-python3 main.py -p p512  -m unscaled -s wd1 -v -a $ALGORITHM -e 10 -u $CRADS
+#python3 main.py -p p512  -m unscaled -s wd2 -v -a $ALGORITHM -e 5 -u $CRADS
+#python3 main.py -p p512  -m unscaled -s wd1 -v -a $ALGORITHM -e 10 -u $CRADS
 #python3 main.py -p p512  -m unscaled -s df -v -a $ALGORITHM -e 10 -u $CRADS
 
-python3 main.py -p p1024  -m unscaled -s wd2 -v -a $ALGORITHM -e 5 -u $CRADS
-python3 main.py -p p1024  -m unscaled -s wd1 -v -a $ALGORITHM -e 10 -u $CRADS
+#python3 main.py -p p1024  -m unscaled -s wd2 -v -a $ALGORITHM -e 5 -u $CRADS
+#python3 main.py -p p1024  -m unscaled -s wd1 -v -a $ALGORITHM -e 10 -u $CRADS
 #python3 main.py -p p1024  -m unscaled -s df -v -a $ALGORITHM -e 10 -u $CRADS
 
-python3 main.py -p p1792  -m unscaled -s wd2 -v -a $ALGORITHM -e 5 -u $CRADS
-python3 main.py -p p1792  -m unscaled -s wd1 -v -a $ALGORITHM -e 10 -u $CRADS
+#python3 main.py -p p1792  -m unscaled -s wd2 -v -a $ALGORITHM -e 5 -u $CRADS
+#python3 main.py -p p1792  -m unscaled -s wd1 -v -a $ALGORITHM -e 10 -u $CRADS
 #python3 main.py -p p1792  -m unscaled -s df -v -a $ALGORITHM -e 10 -u $CRADS
 
-python3 main.py -p p2048  -m unscaled -s wd2 -v -a $ALGORITHM -e 5 -u $CRADS
-python3 main.py -p p2048  -m unscaled -s wd1 -v -a $ALGORITHM -e 10 -u $CRADS
+#python3 main.py -p p2048  -m unscaled -s wd2 -v -a $ALGORITHM -e 5 -u $CRADS
+#python3 main.py -p p2048  -m unscaled -s wd1 -v -a $ALGORITHM -e 10 -u $CRADS
 #python3 main.py -p p2048  -m unscaled -s df -v -a $ALGORITHM -e 10 -u $CRADS
 
-python3 main.py -p p3072  -m unscaled -s wd2 -v -a $ALGORITHM -e 5 -u $CRADS
-python3 main.py -p p3072  -m unscaled -s wd1 -v -a $ALGORITHM -e 10 -u $CRADS
+#python3 main.py -p p3072  -m unscaled -s wd2 -v -a $ALGORITHM -e 5 -u $CRADS
+#python3 main.py -p p3072  -m unscaled -s wd1 -v -a $ALGORITHM -e 10 -u $CRADS
 #python3 main.py -p p3072  -m unscaled -s df -v -a $ALGORITHM -e 10 -u $CRADS
 
 python3 main.py -p p4096  -m unscaled -s wd2 -v -a $ALGORITHM -e 5 -u $CRADS
