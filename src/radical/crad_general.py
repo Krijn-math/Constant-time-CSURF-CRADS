@@ -1,4 +1,3 @@
-from math import copysign
 from src.fp import *
 from src.montgomery import xDBL, xMUL
 
