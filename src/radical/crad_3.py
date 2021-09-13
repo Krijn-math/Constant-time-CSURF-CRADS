@@ -126,8 +126,8 @@ def nine_iso(A):
     '''
     Adapted from the Radical isogenies code: 
     Applies a single radical isogeny of degree 9 by mapping A to newA (output).
-    Due to the limitations of constant-time implementations, we obtain no speed-up
-    with 9-isogenies, so this (affine) radical isogeny is not used. 
+    This is the affine version, taking as input A in affine coordinates, 
+    and using (expensive) inversions to create an affine outpuy.
     '''
 
 
@@ -284,8 +284,9 @@ def nine_iso_projective(X, Z):
     '''
     Adapted from the Radical isogenies code: 
     Applies a single radical isogeny of degree 9 by mapping A to newA (output).
-    Due to the limitations of constant-time implementations, we obtain no speed-up
-    with 9-isogenies, so this (affine) radical isogeny is not used. 
+    This is the projective version of the affine radical isogeny, taking A
+    as (X:Z) as projective input and returning (X:Z) such that the affine output
+    A' = X/Z
     '''
 
 
@@ -500,7 +501,7 @@ def act_with_nine_on_Montgomery(A, exp, Tp_proj = None):
     Applies exp number of 9 isogenies to the Montgomery curve E_A on the floor.
     This function takes A as the Montgomery coefficient, projectively maps this
     to Tate normal coefficients using a point given in projective coordinates
-    applies nine isogenies (projective) and maps it back the the curve on the floor
+    applies nine isogenies (projectively) and maps it back the the curve on the floor
     with the Mont coeff given in affine coordinates.
     '''
     
@@ -518,8 +519,9 @@ def act_with_nine_on_Montgomery(A, exp, Tp_proj = None):
     
     #here, we use a specifically adapted version of Montgomery to Tate that
     #provides the right projective coordinates for the nine isogeny, which
-    #saves the inversions used.
-    X, Z = Montgomery_to_Tate_nine_pro(A, Tp_proj[0], Tp_proj[1]) 
+    #saves the inversions used. The version Montgomory_to_Tate_nine_pro 
+    #expects projective coordinates for A
+    X, Z = Montgomery_to_Tate_nine_pro(A, 1, Tp_proj[0], Tp_proj[1]) 
     
     for i in range(0, abs(exp), 1):         #no -1 because no last velu
         X, Z = nine_iso_projective(X,Z)
@@ -559,7 +561,8 @@ def act_with_nine_on_Montgomery_pro(X, Z, exp, Tp_proj = None):
     Adapted from the Radical isogenies code.
     Applies exp number of 9 isogenies to the Montgomery curve E_A on the floor.
     The sign of exp indicates the direction of the isogenies.
-    This function takes A as the Montgomery coefficient, projectively maps this
+    This function takes A as the Montgomery coefficient, in projective coordinates
+    (X:Z) so that A = X/Z, and projectively maps this
     to Tate normal coefficients using a point given in projective coordinates
     applies nine isogenies (projective) and maps it back the the curve on the floor
     with the Mont coeff given in projective coordinates.
@@ -615,7 +618,7 @@ def act_with_nine_on_Montgomery_pro(X, Z, exp, Tp_proj = None):
   
     a3p = a2p
 
-    # A = pro_to_aff_nine(X, Z)                   #TODO: we do not need to turn affine here, if we adjust Weier to Montg.
+    # A = pro_to_aff_nine(X, Z)                   #we do not turn affine here, because we adjusted Weier to Montg.
 
     # A2 = fp_sqr(A)
     # A3 = fp_mul(A2,A)
@@ -647,8 +650,8 @@ def act_with_nine_on_Montgomery_old(A, exp, Tp_proj = None):
     Adapted from the Radical isogenies code.
     Applies exp number of 9 isogenies to the Montgomery curve E_A on the floor.
     The sign of exp indicates the direction of the isogenies.
-    Due to the limitations of constant-time implementations, we obtain no speed-up
-    with 9-isogenies, so this function is not used. 
+    The old (non-fully) projective version to apply 9-isogenies, which can be used
+    when the input and output should be affine coordinates.
     '''
     
     A = (A * sign(exp)) % p         #

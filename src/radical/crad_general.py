@@ -54,10 +54,10 @@ def Montgomery_min_to_Montgomery(A):
 def Montgomery_min_to_Montgomery_pro(AX, AZ):  
     ''' From the Radical isogenies code: 
     This function transforms
-        FROM: a Montgomery^- coefficient A on the surface
+        FROM: a Montgomery^- coefficient A = (AX : AZ) on the surface
                     y^2 = x^3 + A*x^2 - x.
-        TO: a Montgomery coefficient A on the floor
-                    y^2 = x^3 + A*x^2 + x
+        TO: a Montgomery coefficient A' = (AX' : AZ') on the floor
+                    y^2 = x^3 + A'*x^2 + x
     obtained from the 2-isogeny with kernel <(0,0)>.
 '''
     output = fp_add(-AX,-AX)     
@@ -95,10 +95,10 @@ def Montgomery_to_Montgomery_min_pro(AX, AZ):
     '''
     From the Radical isogenies code:   
     This function transforms
-        FROM: a Montgomery coefficient A on the floor
+        FROM: a Montgomery coefficient A = (AX:AZ) on the floor
                     y^2 = x^3 + A*x^2 + x
-        TO: a Montgomery^- coefficient A on the surface
-                    y^2 = x^3 + A*x^2 - x.
+        TO: a Montgomery^- coefficient A' (AX:AZ) on the surface
+                    y^2 = x^3 + A'*x^2 - x.
     obtained from the 2-isogeny with kernel <(0,0)>. 
 '''
   
@@ -209,10 +209,12 @@ def Montgomery_min_to_Tate_four_pro(AX, AZ, rp, tp):
     In this case for X1(4), M = 1 will always hold.
     Note that [r,t] is the Fp-rational 4-torsion point such that the isogeny with kernel
     2*[r,t] maps [r,t] to a 2-torsion point that has Fp-rational halves as well.
+    In this version, we receive as input the projective versions of r and t, which are
+    such that r = (rp : Z) and t = (tp : Z^2), where Z is the denominator of A
     
-    our function only returns N, in projective coordinates, to save costs
+    This function only returns N, in projective coordinates, to save costs, as M is
+    not required for the Tate normal form of degree 4
     
-    notice r = rp/Z, t = tp/Z^2 
 '''
     AZ2 = fp_sqr(AZ)
     AZ4 = fp_sqr(AZ2)
@@ -271,10 +273,10 @@ def Tate_four_to_Montgomery_min_pro(AX, AZ):
     '''
     From Radical Isogenies:
     This function transforms
-        FROM: coefficient A representing a Tate normal form 
+        FROM: coefficient A = (AX:AZ) representing a Tate normal form 
                     y^2 + x*y + A*y = x^3 + A*x^2 
-        TO: Montgomery^- coefficient A
-                y^2 = x^3 + A*x^2 - x
+        TO: Montgomery^- coefficient A' = (AX':AZ')
+                y^2 = x^3 + A'*x^2 - x
     B is a Montgomery coefficient on the surface where we simply translated 2*(0,0) = (-A,0) to (0,0).
     The rest is a classical rescaling to obtain a Montgomery^- coefficient (just as in CSURF).
 '''
@@ -458,6 +460,8 @@ def Montgomery_to_Tate_nine_pro(X, Z, xP, zP):
     specifically adapted to provide the right projective coordinates for the
     degree-nine projective radical isogeny. This assumes the point is given
     in projective coordinates.
+    The output is such that Mp and Np can both be used immediatly for 
+    input into the projective radical isogeny of degree 9
 '''
 
     rX = xP
@@ -530,7 +534,8 @@ def Montgomery_to_Tate_nine_pro_with_affine_point(A, xP):
     This is a projective version of the original Montgomery to Tate function
     specifically adapted to provide the right projective coordinates for the
     degree-nine projective radical isogeny. This assumes the point is given
-    in affine coordinates.
+    in affine coordinates. Overall, this function is not used, because
+    we assume the given point and Montgomery coefficient will be projective.
 '''
 
     r = xP
@@ -574,7 +579,7 @@ def Montgomery_to_Tate_nine_pro_with_affine_point(A, xP):
 def Weier_to_Montgomery_pro(coeffs):
     '''
    This is a projective version of the Weier to Montgomery function, but
-   assumes for simplicity that coeffs 3 and 4 are 0.
+   assumes for efficiency that coeffs 3 and 4 are 0.
    '''
     a1p = coeffs[0]
     a2p = coeffs[1]

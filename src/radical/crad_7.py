@@ -146,7 +146,7 @@ def seven_iso_projective(X, Z):
 
 def pro_to_aff_seven(X,Z):
     '''
-    A  is represented as XZ^6/Z^7, so this turns it back to affine coordinates
+    A  is represented as (XZ^6 : Z^7) = (X:Z), so this turns it back to affine coordinates
     '''
     A = crad_inv(Z)
     A = fp_mul(X, A)

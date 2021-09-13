@@ -6,9 +6,10 @@ from src.radical.crad_general import *
 
 def act_with_two_on_Montgomery(A, exp):
     '''
-    Given a Mont^+ coefficient, applies a isogeny to the surface, then applies 
+    Given a Mont^+ coefficient, applies an isogeny to the surface, then applies 
     horizontal 2^exp-isogenies in the direction of the sign of exp. 
-    Then applies an isogeny back to the floor.
+    Then applies an isogeny back to the floor. Due to the existence of 
+    four-isogenies, this function is rarely used.
     '''
     
     A = Montgomery_to_Montgomery_min(A)
@@ -68,6 +69,10 @@ def act_with_two_on_Montgomery(A, exp):
     return Montgomery_min_to_Montgomery(A)
 
 def alt_single(A):
+    '''
+    This function takes a Montgomery+ coefficient and applies a single
+    2-isogeny.
+    '''
     
     d = fp_add(A, 2)
     d = crad_sq(d)
@@ -87,6 +92,10 @@ def alt_single(A):
     return fp_sub(2, out)
 
 def alt_single_pro(X, Z):
+    '''
+    This function takes a Montgomery+ coefficient and applies a single
+    2-isogeny, using projective coordinates
+    '''
     
     Z2 = fp_sqr(Z)
     Z3 = fp_mul(Z, Z2)
@@ -117,9 +126,7 @@ def alt_single_pro(X, Z):
 def four_iso(A):
     '''
     Adapted from the Radical isogenies code: 
-    Applies a single radical isogeny of degree 4 by mapping A to output.
-    Due to the limitations of constant-time implementations, we obtain no speed-up
-    with 4-isogenies, so we use 2-isogenies. 
+    Applies a single radical isogeny of degree 4 by mapping A to output. 
     '''
 
     C = crad_quart(-A)                  #(-A)^quart_exp
@@ -167,7 +174,14 @@ def four_iso_projective_old(X, Z):
 	return X_new, Z_new
 
 def four_iso_projective(X, Z):
-      
+    '''
+	Degree-4 radical isogeny using projective coordinates.
+	This is an adaption of the previous function, using the projective coordinates
+    A  = (X:Z) and using the fact that (X:Z) = (XZ^7 : Z^8), thus taking the 4-throot
+    alpha of -A in projective coordinates becomes (4-throot(XZ^7) : Z^2), where 
+    the 4-th root is defined to be such that it takes the value a that is itself a
+    quadratic residue
+    '''
     Z2 = fp_sqr(Z)
     Z4 = fp_sqr(Z2)
     Z7 = fp_mul(Z4, fp_mul(Z2, Z))
@@ -351,7 +365,6 @@ def act_with_four_on_Montgomery(A, exp):
     else:
         A = single_two_on_Montgomery_min(A)
     """
-    #RESTORE THESE
     dum = alt_single(output)
     output, dum = fp_cswap(output, dum, exp % 2)
 
@@ -364,6 +377,10 @@ def act_with_four_on_Montgomery_pro(AX, AZ, exp):
     Given a Mont^+ coefficient, applies a isogeny to the surface, then applies 
     horizontal 4^exp-isogenies = 2^(2*exp) in the direction of the sign of exp. 
     Then applies an isogeny back to the floor.
+    
+    Uses a specific version of moving from Mont- coefficients to the Tate 
+    normal form, to save costs, as we only need a single output value of that
+    function.
     
 '''
     
@@ -416,7 +433,6 @@ def act_with_four_on_Montgomery_pro(AX, AZ, exp):
     else:
         A = single_two_on_Montgomery_min(A)
     """
-    #RESTORE THESE
     X, Z = Montgomery_min_to_Montgomery_pro(X, Z)
     
     dumX, dumZ = alt_single_pro(X, Z)

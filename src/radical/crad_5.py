@@ -51,7 +51,7 @@ def five_iso_projective(X,Z):
 def pro_to_aff_five(X, Z):
     '''
     turns the projective output from five_iso_projective back to affine
-    coordinates by computing A = X/Z^5
+    coordinates by computing A = X/Z^5 from input (X:Z)
     '''
     Z2 = fp_sqr(Z)
     Z4 = fp_sqr(Z2)
