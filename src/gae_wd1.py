@@ -106,6 +106,7 @@ def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
             for j in range(prev, prev + strategy[k], 1):
                 T = xMUL(T, E_i, global_L.index(L[j]))
                 if setting.algorithm == 'csurf' and setting.radicals and global_L.index(L[j]) == 0:
+                    # Removing extra factor-3
                     T = xMUL(T, E_i, 0) # Removing extra factor-3
 
             ramifications.append(T)
