@@ -96,11 +96,11 @@ def keygen():
     if setting.radicals:
         if (len(temporal_m) == 1) or ((len(temporal_m) == 2) and (0 in temporal_m)):
             # This branch is focused when m degree-ell isogeny constructions are required for each ell playing on the GAE
-            #pub = GAE([2, 4], priv[1:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m, crads = {**data_crads, 'L':[7, 5, 3]})
+            #pub = GAE([2, 4], priv[1:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m, crads = {**data_crads, 'L':[3, 5, 7]})
             pub = GAE([2, 4], priv[1:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m, crads = {**data_crads, 'L':[3]})
         else:
             # This branch is centered when m_i degree-(ell_i) isogeny constructions are required per each ell playing on the GAE
-            #pub = GAE([2, 4], priv[1:], L_out, R_out, S_out, r_out, m, crads = {**data_crads, 'L':[7, 5, 3]})
+            #pub = GAE([2, 4], priv[1:], L_out, R_out, S_out, r_out, m, crads = {**data_crads, 'L':[3, 5, 7]})
             pub = GAE([2, 4], priv[1:], L_out, R_out, S_out, r_out, m, crads = {**data_crads, 'L':[3]})
     else:
         if (len(temporal_m) == 1) or ((len(temporal_m) == 2) and (0 in temporal_m)):
@@ -144,11 +144,11 @@ def derive(priv, pub : int):
     if setting.radicals:
         if (len(temporal_m) == 1) or ((len(temporal_m) == 2) and (0 in temporal_m)):
             # This branch is focused when m degree-ell isogeny constructions are required for each ell playing on the GAE
-            #ss = GAE(curve, priv[1:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m, crads = {**data_crads, 'L':[7, 5, 3]})
+            #ss = GAE(curve, priv[1:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m, crads = {**data_crads, 'L':[3, 5, 7]})
             ss = GAE(curve, priv[1:], [L_out[0]], [R_out[0]], [S_out[0]], [temporal_m[-1]], m, crads = {**data_crads, 'L':[3]})
         else:
             # This branch is centered when m_i degree-(ell_i) isogeny constructions are required per each ell playing on the GAE
-            #ss = GAE(curve, priv[1:], L_out, R_out, S_out, r_out, m, crads = {**data_crads, 'L':[7, 5, 3]})
+            #ss = GAE(curve, priv[1:], L_out, R_out, S_out, r_out, m, crads = {**data_crads, 'L':[3, 5, 7]})
             ss = GAE(curve, priv[1:], L_out, R_out, S_out, r_out, m, crads = {**data_crads, 'L':[3]})
     else:
         if (len(temporal_m) == 1) or ((len(temporal_m) == 2) and (0 in temporal_m)):

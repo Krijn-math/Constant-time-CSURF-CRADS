@@ -360,11 +360,15 @@ def evaluate_strategy(E, P, L, strategy, n, m, e, crads_prime = []):
 
                     if crads_prime[0] == 3:
                         #A_i = act_with_three_on_Montgomery(A_i, e[pos], Tp_proj = kernel)
-                        X, Z = act_with_nine_on_Montgomery_pro(X, Z, e[pos], Tp_proj = ramifications[0][0])
-                    # elif crads_prime[0] == 5:
-                    #     A_i = act_with_five_on_Montgomery(A_i, e[pos], Tp_proj = kernel)
-                    # elif crads_prime[0] == 7:
-                    #     A_i = act_with_seven_on_Montgomery(A_i, e[pos], Tp_proj = kernel)
+                        X, Z = act_with_nine_on_Montgomery_pro(X, Z, e[pos]//2, Tp_proj = ramifications[0][0])
+                    elif crads_prime[0] == 5:
+                        X = coeff(E_i)
+                        X = act_with_five_on_Montgomery(X, e[pos], Tp_proj = kernel)
+                        Z = 1
+                    elif crads_prime[0] == 7:
+                        X = coeff(E_i)
+                        X = act_with_seven_on_Montgomery(X, e[pos], Tp_proj = kernel)
+                        Z = 1
                     else:
                         print("not implemented")
 
